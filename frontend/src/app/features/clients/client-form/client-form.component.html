@@ -1,0 +1,115 @@
+<div class="page page--narrow">
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <header class="page-header">
+    <div class="page-header__text">
+      <a
+        [routerLink]="isEdit ? ['/clientes', clientId()] : ['/clientes']"
+        class="back-link"
+      >
+        <span class="material-icons">arrow_back</span>
+        {{ isEdit ? 'Volver a la ficha' : 'Volver a la búsqueda' }}
+      </a>
+      <h1>{{ isEdit ? 'Editar cliente' : 'Nuevo cliente' }}</h1>
+      <p>
+        {{
+          isEdit
+            ? 'Actualiza los datos de contacto. El historial de recetas y pedidos se conserva.'
+            : 'Solo necesitamos el nombre y un celular para empezar.'
+        }}
+      </p>
+    </div>
+  </header>
+
+  <div class="card form-card">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+      <p class="form-required-note">Los campos con * son obligatorios.</p>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Nombre completo</mat-label>
+          <input
+            matInput
+            formControlName="full_name"
+            autocomplete="name"
+            maxlength="150"
+            placeholder="Ej. María López"
+          />
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-hint>Nombre y apellidos tal como figuran en su documento.</mat-hint>
+          @if (form.controls.full_name.touched && form.controls.full_name.invalid) {
+            <mat-error>
+              @if (form.controls.full_name.errors?.['required']) {
+                El nombre es obligatorio.
+              } @else if (form.controls.full_name.errors?.['maxlength']) {
+                El nombre no puede superar los 150 caracteres.
+              } @else {
+                Escribe al menos 3 letras.
+              }
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Número de celular</mat-label>
+          <input
+            matInput
+            formControlName="phone"
+            inputmode="tel"
+            autocomplete="tel"
+            maxlength="30"
+            placeholder="Ej. 987 654 321"
+          />
+          <mat-icon matPrefix>smartphone</mat-icon>
+          <mat-hint>Solo números; puedes usar espacios. Entre 6 y 15 dígitos.</mat-hint>
+          @if (form.controls.phone.touched && form.controls.phone.invalid) {
+            <mat-error>Escribe un celular válido de 6 a 15 dígitos.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="form-field-note">
+          <span class="material-icons">info</span>
+          <p>Si el nombre o el celular ya existen, el sistema te avisará antes de guardar.</p>
+        </div>
+
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Observaciones (opcional)</mat-label>
+          <textarea
+            matInput
+            formControlName="observations"
+            rows="4"
+            maxlength="2000"
+            placeholder="Preferencias, indicaciones o cualquier dato útil…"
+          ></textarea>
+          <mat-hint>Opcional: preferencias, indicaciones o datos importantes del cliente.</mat-hint>
+          <mat-hint align="end">{{ form.controls.observations.value.length }} / 2000</mat-hint>
+        </mat-form-field>
+      </div>
+
+      @if (error()) {
+        <div class="banner banner--danger">
+          <span class="material-icons">error</span>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary btn--lg" [disabled]="saving()">
+          @if (saving()) {
+            <span class="spinner"></span>
+          } @else {
+            <span class="material-icons">save</span>
+          }
+          {{ isEdit ? 'Guardar cambios' : 'Registrar cliente' }}
+        </button>
+        <a
+          [routerLink]="isEdit ? ['/clientes', clientId()] : ['/clientes']"
+          class="btn btn--outline btn--lg"
+        >
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,246 @@
+.history-tabs {
+  display: inline-flex;
+  background: #e9f1f1;
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.history-tab {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 0.87rem;
+  color: #557070;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.history-tab .material-icons {
+  font-size: 19px;
+}
+
+.history-tab--active {
+  background: #fff;
+  color: var(--optic-primary-dark);
+  box-shadow: 0 1px 4px rgba(30, 80, 80, 0.12);
+}
+
+.filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.filters__search {
+  flex: 1 1 240px;
+  min-width: 210px;
+}
+
+.filters__search .search-input {
+  min-height: 44px;
+}
+
+.filters__search .search-box .material-icons {
+  font-size: 21px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.filter-field > span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--optic-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-left: 2px;
+}
+
+.filter-field select,
+.filter-field input {
+  min-height: 44px;
+  border-radius: 11px;
+  border: 1px solid var(--optic-border);
+  background: #fff;
+  padding: 9px 12px;
+  color: var(--optic-text);
+  outline: none;
+  min-width: 140px;
+}
+
+.filter-field select:focus,
+.filter-field input:focus {
+  border-color: var(--optic-primary);
+  box-shadow: 0 0 0 3px rgba(0, 160, 160, 0.12);
+}
+
+.results-meta {
+  margin: 2px 0 10px;
+  padding-left: 4px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.prescription-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.prescription-card {
+  background: #fff;
+  border: 1px solid var(--optic-border);
+  border-radius: 15px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prescription-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.prescription-card__head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prescription-card__head strong {
+  font-size: 0.92rem;
+}
+
+.prescription-card__client {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--optic-primary-dark);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.prescription-card__client .material-icons {
+  font-size: 15px;
+}
+
+.count-pill {
+  background: #eef7f7;
+  color: #467070;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.prescription-card__photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  gap: 7px;
+}
+
+.prescription-card__photos .photo-thumb {
+  aspect-ratio: 1 / 1;
+}
+
+.history-card {
+  background: #fff;
+  border: 1px solid var(--optic-border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.history-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.history-card__head > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.history-card__head strong {
+  font-size: 0.95rem;
+}
+
+.history-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  color: var(--optic-muted);
+  font-size: 0.79rem;
+  border-top: 1px dashed #edf3f3;
+  padding-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .prescription-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .filters {
+    gap: 10px;
+  }
+
+  .filter-field {
+    flex: 1 1 40%;
+  }
+
+  .filter-field select,
+  .filter-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filters > .btn {
+    flex: 1 1 100%;
+  }
+
+  .history-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 9px 10px;
+    font-size: 0.8rem;
+  }
+
+  .history-tabs {
+    display: flex;
+    width: 100%;
+  }
+}

@@ -1,0 +1,228 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Usuarios</h1>
+      <p>Crea una cuenta para que otra persona pueda ingresar al sistema.</p>
+    </div>
+  </header>
+
+  <div class="banner banner--info" style="margin-bottom: 16px;">
+    <span class="material-icons">info</span>
+    <span>
+      Los usuarios nuevos tienen los mismos permisos que tú. Comparte la contraseña de forma
+      segura y pídele que la cambie después de su primer ingreso.
+    </span>
+  </div>
+
+  <div class="users-layout">
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Crear usuario</h2>
+          <p class="muted small">Completa los datos de la persona que usará el sistema.</p>
+        </div>
+      </div>
+
+      @if (saving()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+        <p class="form-required-note">Los campos con * son obligatorios.</p>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Nombre completo</mat-label>
+            <input
+              matInput
+              formControlName="name"
+              autocomplete="name"
+              maxlength="100"
+              placeholder="Ej. Ana Torres"
+            />
+            <mat-icon matPrefix>badge</mat-icon>
+            <mat-hint>Nombre y apellidos de la persona.</mat-hint>
+            @if (form.controls.name.touched && form.controls.name.invalid) {
+              <mat-error>
+                @if (form.controls.name.errors?.['required']) {
+                  El nombre es obligatorio.
+                } @else if (form.controls.name.errors?.['maxlength']) {
+                  El nombre no puede superar los 100 caracteres.
+                } @else {
+                  Escribe al menos 3 letras.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre de usuario</mat-label>
+            <input
+              matInput
+              formControlName="username"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              maxlength="50"
+              placeholder="Ej. maria"
+            />
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-hint>Sin espacios. Se usará para iniciar sesión.</mat-hint>
+            @if (form.controls.username.touched && form.controls.username.invalid) {
+              <mat-error>
+                @if (form.controls.username.errors?.['pattern']) {
+                  Usa solo letras, números, guiones o guiones bajos.
+                } @else if (form.controls.username.errors?.['required']) {
+                  El nombre de usuario es obligatorio.
+                } @else {
+                  Debe tener al menos 3 caracteres.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <div class="active-toggle">
+            <mat-slide-toggle formControlName="is_active" color="primary">
+              Usuario activo
+            </mat-slide-toggle>
+            <p class="muted small">
+              Si está activo, podrá iniciar sesión inmediatamente. Puedes desactivarlo al crearlo
+              si aún no lo usará.
+            </p>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+              maxlength="255"
+            />
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-hint>Mínimo 8 caracteres. Compártela de forma segura.</mat-hint>
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <mat-error>
+                @if (form.controls.password.errors?.['maxlength']) {
+                  La contraseña es demasiado larga.
+                } @else {
+                  La contraseña debe tener al menos 8 caracteres.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Repetir contraseña</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="password_confirmation"
+              autocomplete="new-password"
+              maxlength="255"
+            />
+            <mat-icon matPrefix>lock_reset</mat-icon>
+            <mat-hint>Debe coincidir exactamente con la contraseña.</mat-hint>
+            @if (
+              form.controls.password_confirmation.touched &&
+              form.controls.password_confirmation.invalid
+            ) {
+              <mat-error>
+                @if (form.controls.password_confirmation.errors?.['mismatch']) {
+                  Las contraseñas no coinciden.
+                } @else if (form.controls.password_confirmation.errors?.['maxlength']) {
+                  La contraseña es demasiado larga.
+                } @else {
+                  Repite la contraseña.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (error()) {
+          <div class="banner banner--danger">
+            <span class="material-icons">error</span>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary btn--lg" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner"></span>
+              Creando…
+            } @else {
+              <span class="material-icons">person_add</span>
+              Crear usuario
+            }
+          </button>
+          <button
+            type="button"
+            class="btn btn--outline btn--lg"
+            [disabled]="saving()"
+            (click)="clearForm()"
+          >
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Usuarios del sistema</h2>
+          <p class="muted small">
+            {{ total() }} {{ total() === 1 ? 'usuario registrado' : 'usuarios registrados' }}.
+          </p>
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" (click)="loadUsers()">
+          <mat-icon>refresh</mat-icon>
+          Actualizar
+        </button>
+      </div>
+
+      @if (loading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      @if (!loading() && users().length === 0) {
+        <div class="empty-state">
+          <span class="material-icons">group</span>
+          <h3>No hay usuarios</h3>
+          <p>Crea el primero con el formulario de la izquierda.</p>
+        </div>
+      } @else {
+        <ul class="user-list">
+          @for (user of users(); track user.id) {
+            <li class="user-item">
+              <span class="user-item__avatar">{{ user.name.charAt(0) }}</span>
+              <div class="user-item__body">
+                <strong>{{ user.name }}</strong>
+                <span class="muted small">@{{ user.username }}</span>
+              </div>
+              <div class="user-item__side">
+                <span
+                  class="user-status"
+                  [class.user-status--inactive]="!user.is_active"
+                >
+                  {{ user.is_active ? 'Activo' : 'Inactivo' }}
+                </span>
+                @if (user.created_at) {
+                  <span class="muted tiny">{{ user.created_at | date: 'dd/MM/yyyy' }}</span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        <app-pager
+          [page]="page()"
+          [lastPage]="lastPage()"
+          (pageChange)="goToPage($event)"
+        />
+      }
+    </section>
+  </div>
+</div>

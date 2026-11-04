@@ -1,0 +1,227 @@
+<div class="page">
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <a routerLink="/pedidos" class="back-link">
+    <span class="material-icons">arrow_back</span>
+    Volver a pedidos
+  </a>
+
+  @if (error()) {
+    <div class="banner banner--danger">
+      <span class="material-icons">error</span>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn--sm btn--outline" (click)="load()">Reintentar</button>
+    </div>
+  }
+
+  @if (order(); as order) {
+    <section class="order-hero card">
+      <div class="order-hero__main">
+        <span class="order-hero__id">Pedido #{{ order.id }}</span>
+        <h1>{{ order.lens_type }}</h1>
+        <div class="order-hero__client">
+          <a [routerLink]="['/clientes', order.client_id]" class="order-hero__client-link">
+            <span class="avatar-mini">{{ order.client?.full_name?.charAt(0) }}</span>
+            <span>
+              <strong>{{ order.client?.full_name }}</strong>
+              <small>{{ phone(order) }}</small>
+            </span>
+          </a>
+          <span class="order-hero__date">
+            <mat-icon>event</mat-icon>
+            {{ order.ordered_at | date: 'dd/MM/yyyy' }}
+          </span>
+          <span class="order-hero__days">
+            <mat-icon>schedule</mat-icon>
+            {{ order.days_pending }} días
+          </span>
+        </div>
+      </div>
+
+      <div class="order-hero__side">
+        <app-status-chip [status]="order.status" />
+
+        @if (order.status === 'pending') {
+          <div class="order-hero__actions">
+            <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="markReady()">
+              <span class="material-icons">notifications_active</span>
+              Marcar listo para entregar
+            </button>
+            <button type="button" class="btn btn--danger btn--sm" [disabled]="busy()" (click)="cancel()">
+              Cancelar pedido
+            </button>
+          </div>
+        }
+
+        @if (order.status === 'ready') {
+          <div class="order-hero__actions">
+            <button type="button" class="btn btn--success btn--lg" [disabled]="busy()" (click)="markDelivered()">
+              <span class="material-icons">check_circle</span>
+              Marcar como entregado
+            </button>
+            <button type="button" class="btn btn--outline btn--sm" [disabled]="busy()" (click)="backToPending()">
+              Volver a pendiente
+            </button>
+            <button type="button" class="btn btn--danger btn--sm" [disabled]="busy()" (click)="cancel()">
+              Cancelar pedido
+            </button>
+          </div>
+        }
+      </div>
+    </section>
+
+    @if (order.status === 'delivered') {
+      <div class="banner banner--info" style="margin-bottom: 14px;">
+        <span class="material-icons">check_circle</span>
+        <span>
+          Pedido entregado el {{ order.delivered_at | date: 'dd/MM/yyyy HH:mm' }}
+          @if (order.delivery_user) {
+            por <strong>{{ order.delivery_user.name }}</strong>
+          }.
+        </span>
+      </div>
+    }
+
+    @if (order.status === 'cancelled') {
+      <div class="banner banner--danger" style="margin-bottom: 14px;">
+        <span class="material-icons">block</span>
+        <span>Este pedido fue cancelado. Se conserva en el historial.</span>
+      </div>
+    }
+
+    <div class="order-columns">
+      <section class="card stack">
+        <div>
+          <h2>Detalles del pedido</h2>
+          <p class="muted small">Información registrada y control de pago.</p>
+        </div>
+
+        <dl class="detail-list">
+          <div>
+            <dt>Tipo de lentes</dt>
+            <dd>{{ order.lens_type }}</dd>
+          </div>
+          <div>
+            <dt>Fecha del pedido</dt>
+            <dd>{{ order.ordered_at | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+          <div>
+            <dt>Registrado por</dt>
+            <dd>{{ order.creator?.name || '—' }}</dd>
+          </div>
+          <div>
+            <dt>Listo desde</dt>
+            <dd>{{ order.ready_at ? (order.ready_at | date: 'dd/MM/yyyy HH:mm') : '—' }}</dd>
+          </div>
+          @if (order.delivered_at) {
+            <div>
+              <dt>Entregado el</dt>
+              <dd>{{ order.delivered_at | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+            <div>
+              <dt>Entregado por</dt>
+              <dd>{{ order.delivery_user?.name || '—' }}</dd>
+            </div>
+          }
+        </dl>
+
+        @if (order.observations) {
+          <div class="note-box">
+            <span class="material-icons">notes</span>
+            <p>{{ order.observations }}</p>
+          </div>
+        }
+
+        <div class="money-grid">
+          <div class="money-item">
+            <span>Precio total</span>
+            <strong>{{ money(order.price) }}</strong>
+          </div>
+          <div class="money-item">
+            <span>Adelanto</span>
+            <strong>{{ money(order.advance) }}</strong>
+          </div>
+          <div class="money-item money-item--balance">
+            <span>Saldo pendiente</span>
+            <strong>{{ money(order.balance) }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="card stack">
+        <div class="row row--between">
+          <div>
+            <h2>Receta utilizada</h2>
+            <p class="muted small">La medida original no se modifica al crear el pedido.</p>
+          </div>
+          @if (order.prescription?.images?.length) {
+            <span class="count-pill">{{ order.prescription?.images?.length }} fotos</span>
+          }
+        </div>
+
+        @if (order.prescription; as prescription) {
+          <div class="prescription-meta">
+            <span><mat-icon>event</mat-icon> {{ prescription.registered_at | date: 'dd/MM/yyyy' }}</span>
+          </div>
+
+          @if (prescription.observations) {
+            <p class="muted small">{{ prescription.observations }}</p>
+          }
+
+          @if (prescription.images?.length) {
+            <div class="photo-grid">
+              @for (image of prescription.images; track image.id) {
+                <button
+                  type="button"
+                  class="photo-thumb"
+                  (click)="openImage(image)"
+                >
+                  <app-auth-image [image]="image" />
+                  <span class="photo-thumb__badge">Ver</span>
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="empty-state" style="padding: 20px;">
+              <span class="material-icons">hide_image</span>
+              <p>La receta no tiene fotografías.</p>
+            </div>
+          }
+        }
+      </section>
+    </div>
+
+    <section class="card history-card">
+      <h2>Historial de cambios</h2>
+      <p class="muted small" style="margin-bottom: 14px;">
+        Cada cambio de estado queda registrado con su fecha y responsable.
+      </p>
+
+      <ul class="history-list">
+        @for (history of order.status_histories; track history.id) {
+          <li>
+            <span class="history-dot"></span>
+            <div class="history-body">
+              <div class="history-head">
+                <strong>
+                  {{ history.from_status ? statusLabel(history.from_status) + ' → ' : '' }}{{
+                    statusLabel(history.to_status)
+                  }}
+                </strong>
+                <span class="muted small">{{ history.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <span class="muted small">
+                {{ history.changer?.name ? 'Por ' + history.changer?.name : 'Sistema' }}
+                @if (history.note) {
+                  · {{ history.note }}
+                }
+              </span>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>

@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Prescription;
+use App\Models\PrescriptionImage;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use RuntimeException;
+
+class PrescriptionImageService
+{
+    public const ALLOWED_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+    ];
+
+    /**
+     * @param  array<int, UploadedFile>  $files
+     * @return array<int, PrescriptionImage>
+     */
+    public function storeMany(Prescription $prescription, array $files, ?int $userId): array
+    {
+        $stored = [];
+
+        foreach ($files as $file) {
+            $stored[] = $this->storeOne($prescription, $file, $userId);
+        }
+
+        return $stored;
+    }
+
+    public function storeOne(Prescription $prescription, UploadedFile $file, ?int $userId): PrescriptionImage
+    {
+        $mime = $file->getMimeType();
+
+        if (! in_array($mime, self::ALLOWED_MIME_TYPES, true)) {
+            throw new RuntimeException('Formato de imagen no permitido.');
+        }
+
+        $extension = match ($mime) {
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => 'jpg',
+        };
+
+        $directory = 'prescriptions/'.$prescription->id;
+        $filename = Str::uuid()->toString().'.'.$extension;
+
+        $path = $file->storeAs($directory, $filename, 'local');
+
+        if ($path === false) {
+            throw new RuntimeException('No se pudo guardar la fotografía.');
+        }
+
+        return PrescriptionImage::create([
+            'prescription_id' => $prescription->id,
+            'file_path' => $path,
+            'original_name' => $this->safeOriginalName($file->getClientOriginalName(), $extension),
+            'mime_type' => $mime,
+            'file_size' => Storage::disk('local')->size($path),
+            'created_by' => $userId,
+            'created_at' => now(),
+        ]);
+    }
+
+    private function safeOriginalName(string $name, string $extension): string
+    {
+        $base = pathinfo($name, PATHINFO_FILENAME);
+        $base = Str::limit(preg_replace('/[^\pL\pN\-_ ]+/u', '', $base) ?: 'receta', 180, '');
+
+        return trim($base).'.'.$extension;
+    }
+}

@@ -1,0 +1,102 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Avisos de entrega</h1>
+      <p>Estos lentes ya están listos. Confirma la entrega cuando el cliente los recoja.</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--outline" (click)="load()">
+        <span class="material-icons">refresh</span>
+        Actualizar
+      </button>
+    </div>
+  </header>
+
+  @if (!loading() && items().length > 0) {
+    <div class="banner banner--info" style="margin-bottom: 14px;">
+      <span class="material-icons">notifications_active</span>
+      <span>
+        Hay <strong>{{ total() }}</strong>
+        {{ total() === 1 ? 'pedido listo' : 'pedidos listos' }} para entregar.
+      </span>
+    </div>
+  }
+
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  @if (!loading() && items().length === 0) {
+    <div class="empty-state">
+      <span class="material-icons">local_shipping</span>
+      <h3>No hay entregas pendientes</h3>
+      <p>Cuando marques un pedido como “Listo para entregar”, aparecerá aquí.</p>
+      <a routerLink="/pedidos" class="btn btn--outline" style="margin-top: 14px;">
+        <span class="material-icons">shopping_bag</span>
+        Ver todos los pedidos
+      </a>
+    </div>
+  } @else {
+    <div class="delivery-grid">
+      @for (order of items(); track order.id) {
+        <article class="delivery-card">
+          <div class="delivery-card__top">
+            <div class="delivery-card__client">
+              <span class="delivery-card__avatar">{{ order.client?.full_name?.charAt(0) }}</span>
+              <div>
+                <strong>{{ order.client?.full_name }}</strong>
+                <a [href]="'tel:' + order.client?.phone" class="delivery-card__phone">
+                  <mat-icon>smartphone</mat-icon>
+                  {{ phone(order) }}
+                </a>
+              </div>
+            </div>
+            <span class="ready-badge">
+              <span class="material-icons">check_circle</span>
+              Listo
+            </span>
+          </div>
+
+          <div class="delivery-card__body">
+            <div>
+              <span class="label">Pedido</span>
+              <strong>#{{ order.id }} · {{ order.lens_type }}</strong>
+            </div>
+            <div>
+              <span class="label">Fecha del pedido</span>
+              <strong>{{ order.ordered_at | date: 'dd/MM/yyyy' }}</strong>
+            </div>
+            <div>
+              <span class="label">Esperando entrega</span>
+              <strong>{{ order.days_pending }} días</strong>
+            </div>
+          </div>
+
+          @if (order.ready_at) {
+            <p class="delivery-card__since small muted">
+              <span class="material-icons">notifications_active</span>
+              Listo desde el {{ order.ready_at | date: 'dd/MM/yyyy HH:mm' }}
+            </p>
+          }
+
+          <div class="delivery-card__actions">
+            <button type="button" class="btn btn--outline btn--sm" (click)="open(order)">
+              Ver pedido
+            </button>
+            <button
+              type="button"
+              class="btn btn--success btn--sm"
+              [disabled]="busyId() === order.id"
+              (click)="deliver(order)"
+            >
+              <span class="material-icons">check</span>
+              Marcar entregado
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+
+    <app-pager [page]="page()" [lastPage]="lastPage()" (pageChange)="goToPage($event)" />
+  }
+</div>

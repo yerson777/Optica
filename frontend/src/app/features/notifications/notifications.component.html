@@ -1,0 +1,134 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Avisos</h1>
+      <p>Pedidos listos, pendientes antiguos y recordatorios importantes para el local.</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--outline" (click)="load()">
+        <span class="material-icons">refresh</span>
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="btn btn--soft"
+        [disabled]="unreadCount() === 0 || markingAll()"
+        (click)="markAllRead()"
+      >
+        <span class="material-icons">done_all</span>
+        Marcar todos como leídos
+      </button>
+    </div>
+  </header>
+
+  <section class="card settings-card">
+    <div class="settings-card__text">
+      <span class="settings-card__icon material-icons">tune</span>
+      <div>
+        <h2>Aviso de pedidos pendientes</h2>
+        <p class="muted small">
+          Se generará un aviso cuando un pedido lleve más de
+          <strong>{{ alertDays() }} días</strong> pendiente. Este plazo se comparte entre los
+          dos usuarios. El plazo debe estar entre 1 y 60 días.
+        </p>
+      </div>
+    </div>
+    <div class="settings-card__form">
+      <label class="days-input">
+        <span>Días</span>
+        <input
+          type="number"
+          min="1"
+          max="60"
+          [value]="alertDays()"
+          (input)="onDaysInput($event)"
+        />
+      </label>
+      <button type="button" class="btn btn--primary" [disabled]="savingSettings()" (click)="saveSettings()">
+        Guardar
+      </button>
+    </div>
+  </section>
+
+  <div class="notif-toolbar">
+    <div class="notif-tabs">
+      <button
+        type="button"
+        class="notif-tab"
+        [class.notif-tab--active]="!onlyUnread()"
+        (click)="onlyUnread() && toggleUnread()"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        class="notif-tab"
+        [class.notif-tab--active]="onlyUnread()"
+        (click)="!onlyUnread() && toggleUnread()"
+      >
+        Sin leer
+        @if (unreadCount() > 0) {
+          <span class="tab-badge">{{ unreadCount() }}</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  @if (!loading() && items().length === 0) {
+    <div class="empty-state">
+      <span class="material-icons">notifications_off</span>
+      <h3>No hay avisos</h3>
+      <p>
+        @if (onlyUnread()) {
+          No tienes avisos sin leer. Buen trabajo.
+        } @else {
+          Los avisos de pedidos listos o pendientes aparecerán aquí.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="notif-list">
+      @for (notification of items(); track notification.id) {
+        <article class="notif-item" [class.notif-item--unread]="!notification.read_at">
+          <span
+            class="notif-item__icon"
+            [class.notif-item__icon--ready]="notification.type === 'ready'"
+            [class.notif-item__icon--danger]="notification.type === 'stale'"
+          >
+            <mat-icon>{{ typeIcon(notification.type) }}</mat-icon>
+          </span>
+
+          <div class="notif-item__body">
+            <div class="notif-item__head">
+              <span class="notif-item__type">{{ typeLabel(notification.type) }}</span>
+              <span class="muted tiny">{{ notification.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <p>{{ notification.message }}</p>
+            @if (notification.order?.client) {
+              <span class="muted small">
+                Cliente: {{ notification.order?.client?.full_name }}
+              </span>
+            }
+          </div>
+
+          <div class="notif-item__actions">
+            <button type="button" class="btn btn--outline btn--sm" (click)="openOrder(notification)">
+              Ver pedido
+            </button>
+            @if (!notification.read_at) {
+              <button type="button" class="btn btn--ghost btn--sm" (click)="markRead(notification)">
+                Marcar leído
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+
+    <app-pager [page]="page()" [lastPage]="lastPage()" (pageChange)="goToPage($event)" />
+  }
+</div>

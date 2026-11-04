@@ -1,0 +1,110 @@
+<div class="login">
+  <section class="login__hero">
+    <div class="login__brand">
+      <div class="login__mark"><span class="material-icons">visibility</span></div>
+      <div>
+        <div class="login__name">Óptica</div>
+        <div class="login__sub">Sistema de gestión</div>
+      </div>
+    </div>
+
+    <div class="login__pitch">
+      <h1>Todo lo importante de tus clientes, siempre a mano.</h1>
+      <p>
+        Guarda recetas con fotografías, encuentra a cada cliente en segundos y controla
+        los pedidos hasta la entrega.
+      </p>
+
+      <ul class="login__features">
+        <li>
+          <span class="material-icons">photo_camera</span>
+          Fotografías de recetas protegidas
+        </li>
+        <li>
+          <span class="material-icons">manage_search</span>
+          Búsqueda por nombre o celular
+        </li>
+        <li>
+          <span class="material-icons">task_alt</span>
+          Control de pedidos y entregas
+        </li>
+      </ul>
+    </div>
+
+    <p class="login__foot">Información segura y disponible incluso después de varios años.</p>
+  </section>
+
+  <section class="login__panel">
+    <div class="login__card">
+      <div class="login__card-head">
+        <h2>Bienvenido</h2>
+        <p>Ingresa con el usuario que te entregó el administrador.</p>
+      </div>
+
+      @if (loading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="login__form">
+        <mat-form-field appearance="outline">
+          <mat-label>Usuario</mat-label>
+          <input
+            matInput
+            formControlName="username"
+            autocomplete="username"
+            autocapitalize="none"
+            spellcheck="false"
+            maxlength="50"
+            placeholder="Ej. ana"
+          />
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-hint>Escríbelo tal como te lo entregaron.</mat-hint>
+          @if (form.controls.username.touched && form.controls.username.invalid) {
+            <mat-error>Escribe tu usuario.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Contraseña</mat-label>
+          <input
+            matInput
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+            maxlength="255"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <mat-hint>Distingue mayúsculas, minúsculas y símbolos.</mat-hint>
+          <button
+            type="button"
+            matSuffix
+            class="login__eye"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <mat-error>Escribe tu contraseña.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (error()) {
+          <div class="banner banner--danger">
+            <span class="material-icons">error</span>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <button type="submit" class="btn btn--primary btn--lg btn--block" [disabled]="loading()">
+          <span class="material-icons">login</span>
+          Ingresar al sistema
+        </button>
+      </form>
+
+      <p class="login__help">
+        ¿Problemas para ingresar? Pide apoyo a la persona encargada del sistema.
+      </p>
+    </div>
+  </section>
+</div>

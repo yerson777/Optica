@@ -1,0 +1,276 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Historial</h1>
+      <p>Consulta clientes, recetas y pedidos anteriores. La información nunca se borra.</p>
+    </div>
+  </header>
+
+  <div class="history-tabs">
+    @for (tab of tabs; track tab.id) {
+      <button
+        type="button"
+        class="history-tab"
+        [class.history-tab--active]="activeTab() === tab.id"
+        (click)="changeTab(tab.id)"
+      >
+        <mat-icon>{{ tab.icon }}</mat-icon>
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <div class="card filters">
+    <div class="filters__search">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input
+          class="search-input"
+          type="search" maxlength="100"
+          [placeholder]="
+            activeTab() === 'clients'
+              ? 'Buscar por nombre o celular…'
+              : activeTab() === 'prescriptions'
+                ? 'Buscar por cliente o celular…'
+                : 'Buscar por cliente o celular…'
+          "
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+    </div>
+
+    @if (activeTab() === 'orders') {
+      <label class="filter-field">
+        <span>Estado</span>
+        <select [value]="statusFilter()" (change)="onStatusChange($event)">
+          <option value="">Todos</option>
+          <option value="pending">Pendientes</option>
+          <option value="ready">Listos para entregar</option>
+          <option value="delivered">Entregados</option>
+          <option value="cancelled">Cancelados</option>
+        </select>
+      </label>
+    }
+
+    <label class="filter-field">
+      <span>Desde</span>
+      <input type="date" [value]="dateFrom()" (change)="onDateChange('from', $event)" />
+    </label>
+
+    <label class="filter-field">
+      <span>Hasta</span>
+      <input type="date" [value]="dateTo()" (change)="onDateChange('to', $event)" />
+    </label>
+
+    <button type="button" class="btn btn--ghost btn--sm" (click)="clearFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      Limpiar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <div class="results-meta muted small">
+    @if (!loading()) {
+      {{ total() }} {{ total() === 1 ? 'resultado' : 'resultados' }}
+    }
+  </div>
+
+  @if (!loading() && total() === 0) {
+    <div class="empty-state">
+      <span class="material-icons">history</span>
+      <h3>No hay resultados</h3>
+      <p>Prueba con otro cliente, otras fechas o cambia los filtros.</p>
+    </div>
+  }
+
+  @if (activeTab() === 'orders') {
+    @if (orders().length) {
+      <div class="desktop-only">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Lentes</th>
+                <th>Estado</th>
+                <th>Entrega</th>
+                <th>Responsable</th>
+                <th>Total / Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of orders(); track order.id) {
+                <tr class="clickable" (click)="openOrder(order)">
+                  <td>
+                    <div class="cell-main">{{ order.ordered_at | date: 'dd/MM/yyyy' }}</div>
+                    <div class="cell-sub">#{{ order.id }}</div>
+                  </td>
+                  <td>
+                    <div class="cell-main">{{ order.client?.full_name }}</div>
+                    <div class="cell-sub">{{ phone(order.client?.phone) }}</div>
+                  </td>
+                  <td>{{ order.lens_type }}</td>
+                  <td><app-status-chip [status]="order.status" /></td>
+                  <td>
+                    @if (order.delivered_at) {
+                      {{ order.delivered_at | date: 'dd/MM/yyyy HH:mm' }}
+                    } @else {
+                      <span class="muted">—</span>
+                    }
+                  </td>
+                  <td>{{ order.delivery_user?.name || '—' }}</td>
+                  <td>
+                    <div class="cell-main">{{ money(order.price) }}</div>
+                    <div class="cell-sub">Saldo: {{ money(order.balance) }}</div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mobile-only stack">
+        @for (order of orders(); track order.id) {
+          <article class="history-card" (click)="openOrder(order)">
+            <div class="history-card__head">
+              <div>
+                <strong>{{ order.client?.full_name }}</strong>
+                <span class="muted small">{{ order.ordered_at | date: 'dd/MM/yyyy' }} · #{{ order.id }}</span>
+              </div>
+              <app-status-chip [status]="order.status" />
+            </div>
+            <div class="history-card__meta">
+              <span>{{ order.lens_type }}</span>
+              <span>Total {{ money(order.price) }}</span>
+              <span>Saldo {{ money(order.balance) }}</span>
+            </div>
+            @if (order.delivered_at) {
+              <span class="muted tiny">
+                Entregado {{ order.delivered_at | date: 'dd/MM/yyyy HH:mm' }}
+                @if (order.delivery_user) {
+                  por {{ order.delivery_user.name }}
+                }
+              </span>
+            }
+          </article>
+        }
+      </div>
+    }
+  }
+
+  @if (activeTab() === 'prescriptions') {
+    <div class="prescription-grid">
+      @for (prescription of prescriptions(); track prescription.id) {
+        <article class="prescription-card">
+          <div class="prescription-card__head">
+            <div>
+              <strong>{{ prescription.registered_at | date: 'dd/MM/yyyy' }}</strong>
+              <button
+                type="button"
+                class="prescription-card__client"
+                (click)="openClient({ id: prescription.client_id })"
+              >
+                {{ prescription.client?.full_name }}
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+            <span class="count-pill">
+              {{ prescription.orders_count ?? 0 }}
+              {{ (prescription.orders_count ?? 0) === 1 ? 'pedido' : 'pedidos' }}
+            </span>
+          </div>
+
+          @if (prescription.observations) {
+            <p class="muted small">{{ prescription.observations }}</p>
+          }
+
+          @if (prescription.images.length) {
+            <div class="prescription-card__photos">
+              @for (image of prescription.images; track image.id) {
+                <button
+                  type="button"
+                  class="photo-thumb"
+                  (click)="openImage(image)"
+                >
+                  <app-auth-image [image]="image" />
+                  <span class="photo-thumb__badge">{{ image.mime_type === 'image/png' ? 'PNG' : 'Foto' }}</span>
+                </button>
+              }
+            </div>
+          } @else {
+            <p class="muted small">Sin fotografías.</p>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  @if (activeTab() === 'clients') {
+    @if (clients().length) {
+      <div class="desktop-only">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Celular</th>
+                <th>Registrado</th>
+                <th>Recetas</th>
+                <th>Pedidos</th>
+                <th>Último pedido</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (client of clients(); track client.id) {
+                <tr class="clickable" (click)="openClient(client)">
+                  <td class="cell-main">{{ client.full_name }}</td>
+                  <td>{{ phone(client.phone) }}</td>
+                  <td>{{ client.created_at | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ client.prescriptions_count ?? 0 }}</td>
+                  <td>{{ client.orders_count ?? 0 }}</td>
+                  <td>
+                    @if (client.latest_order) {
+                      <div class="cell-main">{{ client.latest_order.ordered_at | date: 'dd/MM/yyyy' }}</div>
+                      <div class="cell-sub">{{ client.latest_order.status_label }}</div>
+                    } @else {
+                      <span class="muted">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mobile-only stack">
+        @for (client of clients(); track client.id) {
+          <article class="history-card" (click)="openClient(client)">
+            <div class="history-card__head">
+              <div>
+                <strong>{{ client.full_name }}</strong>
+                <span class="muted small">{{ phone(client.phone) }}</span>
+              </div>
+              <span class="muted tiny">{{ client.created_at | date: 'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="history-card__meta">
+              <span>{{ client.prescriptions_count ?? 0 }} recetas</span>
+              <span>{{ client.orders_count ?? 0 }} pedidos</span>
+              @if (client.latest_order) {
+                <span>Último: {{ client.latest_order.ordered_at | date: 'dd/MM/yyyy' }}</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+
+  <app-pager [page]="page()" [lastPage]="lastPage()" (pageChange)="goToPage($event)" />
+</div>

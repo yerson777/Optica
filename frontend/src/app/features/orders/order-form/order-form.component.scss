@@ -1,0 +1,160 @@
+.page--narrow {
+  max-width: 900px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--optic-primary-dark);
+  font-weight: 600;
+  font-size: 0.82rem;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.back-link .material-icons {
+  font-size: 18px;
+}
+
+.client-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+
+.client-summary__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #def5f5;
+  color: #007171;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.client-summary > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.client-summary strong {
+  font-size: 0.95rem;
+}
+
+.prescription-summary {
+  background: #f7fbfb;
+  border: 1px solid #e4efef;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.prescription-summary__info {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 200px;
+}
+
+.prescription-summary__info .material-icons {
+  color: var(--optic-primary);
+  font-size: 21px;
+  margin-top: 1px;
+}
+
+.prescription-summary__info strong {
+  font-size: 0.86rem;
+}
+
+.prescription-summary__info p {
+  margin-top: 2px;
+}
+
+.prescription-summary__photos {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.prescription-summary__photos .photo-thumb {
+  width: 62px;
+  height: 52px;
+  aspect-ratio: auto;
+}
+
+.balance-box {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: #f1fafa;
+  border: 1px solid #dcefee;
+  border-radius: 12px;
+  padding: 11px 14px;
+}
+
+.balance-box .material-icons {
+  color: var(--optic-primary-dark);
+  font-size: 24px;
+}
+
+.balance-box > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance-box strong {
+  font-size: 1.15rem;
+  color: #164040;
+}
+
+.balance-box > .small {
+  margin-left: auto;
+  text-align: right;
+}
+
+.balance-box--alert {
+  background: var(--optic-danger-soft);
+  border-color: #f3cccc;
+}
+
+.balance-box--alert .material-icons,
+.balance-box--alert strong {
+  color: var(--optic-danger);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 720px) {
+  .form-actions .btn {
+    flex: 1 1 auto;
+  }
+}

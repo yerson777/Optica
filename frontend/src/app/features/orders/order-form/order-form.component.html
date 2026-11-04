@@ -1,0 +1,239 @@
+<div class="page page--narrow">
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <a [routerLink]="client() ? ['/clientes', client()?.id] : ['/clientes']" class="back-link">
+    <span class="material-icons">arrow_back</span>
+    Volver a la ficha del cliente
+  </a>
+
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Nuevo pedido</h1>
+      <p>
+        @if (client(); as client) {
+          Para <strong>{{ client.full_name }}</strong>. Usa una receta existente como referencia.
+        } @else {
+          Registra un pedido para un cliente.
+        }
+      </p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="banner banner--danger" style="margin-bottom: 14px;">
+      <span class="material-icons">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (client(); as client) {
+    <div class="card client-summary">
+      <span class="client-summary__avatar">{{ client.full_name.charAt(0) }}</span>
+      <div>
+        <strong>{{ client.full_name }}</strong>
+        <span class="muted small">{{ client.phone }}</span>
+      </div>
+      <a [routerLink]="['/clientes', client.id]" class="btn btn--ghost btn--sm">Ver ficha</a>
+    </div>
+
+    @if (prescriptions.length === 0) {
+      <div class="empty-state" style="margin-bottom: 14px;">
+        <span class="material-icons">photo_camera_back</span>
+        <h3>Este cliente no tiene recetas</h3>
+        <p>Para crear un pedido primero debes registrar la fotografía de la receta.</p>
+        <a [routerLink]="['/clientes', client.id, 'recetas', 'nueva']" class="btn btn--primary" style="margin-top: 14px;">
+          <span class="material-icons">photo_camera</span>
+          Registrar receta
+        </a>
+      </div>
+    }
+
+    <div class="card">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+        <p class="form-required-note">Los campos con * son obligatorios.</p>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Receta utilizada</mat-label>
+            <mat-select formControlName="prescription_id" placeholder="Selecciona una receta">
+              @for (prescription of prescriptions; track prescription.id) {
+                <mat-option [value]="prescription.id">
+                  {{ prescription.registered_at | date: 'dd/MM/yyyy' }}
+                  @if (prescription.observations) {
+                    · {{ prescription.observations }}
+                  }
+                  ({{ prescription.images.length }} foto{{ prescription.images.length === 1 ? '' : 's' }})
+                </mat-option>
+              }
+            </mat-select>
+            <mat-hint>Receta que respalda las medidas de este pedido.</mat-hint>
+            @if (form.controls.prescription_id.touched && form.controls.prescription_id.invalid) {
+              <mat-error>Selecciona la receta que se usará.</mat-error>
+            }
+          </mat-form-field>
+
+          @if (selectedPrescription(); as prescription) {
+            <div class="prescription-summary full">
+              <div class="prescription-summary__info">
+                <span class="material-icons">description</span>
+                <div>
+                  <strong>Receta del {{ prescription.registered_at | date: 'dd/MM/yyyy' }}</strong>
+                  <p class="muted small">{{ prescription.observations || 'Sin observaciones.' }}</p>
+                </div>
+              </div>
+              @if (prescription.images.length) {
+                <div class="prescription-summary__photos">
+                  @for (image of prescription.images; track image.id) {
+                    <button
+                      type="button"
+                      class="photo-thumb"
+                      (click)="openImage(image)"
+                    >
+                      <app-auth-image [image]="image" />
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de lentes</mat-label>
+            <input
+              matInput
+              formControlName="lens_type"
+              list="lensTypes"
+              maxlength="100"
+              placeholder="Ej. Progresivo"
+            />
+            <mat-icon matPrefix>visibility</mat-icon>
+            <mat-hint>Elige una opción o escribe el tipo exacto.</mat-hint>
+            <datalist id="lensTypes">
+              @for (type of lensTypes; track type) {
+                <option [value]="type"></option>
+              }
+            </datalist>
+            @if (form.controls.lens_type.touched && form.controls.lens_type.invalid) {
+              <mat-error>
+                @if (form.controls.lens_type.errors?.['maxlength']) {
+                  El tipo de lentes no puede superar los 100 caracteres.
+                } @else {
+                  Indica el tipo de lentes.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha del pedido</mat-label>
+            <input matInput type="date" formControlName="ordered_at" [max]="today" />
+            <mat-hint>No puede ser una fecha futura.</mat-hint>
+            @if (form.controls.ordered_at.touched && form.controls.ordered_at.invalid) {
+              <mat-error>
+                @if (form.controls.ordered_at.errors?.['futureDate']) {
+                  La fecha no puede ser futura.
+                } @else {
+                  Selecciona la fecha del pedido.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Precio total (opcional)</mat-label>
+            <span matPrefix>Bs&nbsp;</span>
+            <input
+              matInput
+              type="number"
+              min="0"
+              max="999999"
+              step="0.01"
+              formControlName="price"
+              inputmode="decimal"
+            />
+            <mat-hint>Opcional. Si lo registras, se calcula el saldo.</mat-hint>
+            @if (form.controls.price.touched && form.controls.price.invalid) {
+              <mat-error>
+                @if (form.controls.price.errors?.['max']) {
+                  El precio no puede superar Bs 999.999.
+                } @else {
+                  El precio no puede ser negativo.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Adelanto (opcional)</mat-label>
+            <span matPrefix>Bs&nbsp;</span>
+            <input
+              matInput
+              type="number"
+              min="0"
+              max="999999"
+              step="0.01"
+              formControlName="advance"
+              inputmode="decimal"
+            />
+            <mat-hint>Opcional. No puede superar el precio total.</mat-hint>
+            @if (form.controls.advance.touched && form.controls.advance.invalid) {
+              <mat-error>
+                @if (form.controls.advance.errors?.['exceedsPrice']) {
+                  El adelanto no puede superar el precio total.
+                } @else if (form.controls.advance.errors?.['max']) {
+                  El adelanto no puede superar Bs 999.999.
+                } @else {
+                  El adelanto no puede ser negativo.
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          @if (balance() !== null) {
+            <div class="balance-box full" [class.balance-box--alert]="advanceExceedsPrice()">
+              <span class="material-icons">{{ advanceExceedsPrice() ? 'warning' : 'account_balance_wallet' }}</span>
+              <div>
+                <span class="small muted">Saldo pendiente</span>
+                <strong>{{ money(balance()) }}</strong>
+              </div>
+              @if (advanceExceedsPrice()) {
+                <span class="small">El adelanto supera el precio. Corrige los montos.</span>
+              }
+            </div>
+          }
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Observaciones del pedido (opcional)</mat-label>
+            <textarea
+              matInput
+              rows="3"
+              maxlength="2000"
+              formControlName="observations"
+              placeholder="Ej. Tratamiento antirreflejo, montura elegida, fecha prometida…"
+            ></textarea>
+            <mat-hint>Opcional: detalles del tratamiento, montura o fecha prometida.</mat-hint>
+            <mat-hint align="end">{{ form.controls.observations.value?.length || 0 }} / 2000</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn--primary btn--lg"
+            [disabled]="saving() || prescriptions.length === 0"
+          >
+            @if (saving()) {
+              <span class="spinner"></span>
+              Registrando…
+            } @else {
+              <span class="material-icons">add_shopping_cart</span>
+              Registrar pedido
+            }
+          </button>
+          <a [routerLink]="['/clientes', client.id]" class="btn btn--outline btn--lg">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  }
+</div>

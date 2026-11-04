@@ -1,0 +1,173 @@
+.filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.filters__search {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.filters__search .search-input {
+  min-height: 44px;
+}
+
+.filters__search .search-box .material-icons {
+  font-size: 21px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.filter-field > span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--optic-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-left: 2px;
+}
+
+.filter-field select,
+.filter-field input {
+  min-height: 44px;
+  border-radius: 11px;
+  border: 1px solid var(--optic-border);
+  background: #fff;
+  padding: 9px 12px;
+  color: var(--optic-text);
+  outline: none;
+  min-width: 150px;
+}
+
+.filter-field select:focus,
+.filter-field input:focus {
+  border-color: var(--optic-primary);
+  box-shadow: 0 0 0 3px rgba(0, 160, 160, 0.12);
+}
+
+.results-meta {
+  margin: 2px 0 10px;
+  padding-left: 4px;
+}
+
+.days {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 30px;
+  border-radius: 9px;
+  background: #f3f8f8;
+  color: #466262;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.order-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.order-card {
+  background: #fff;
+  border: 1px solid var(--optic-border);
+  border-radius: 15px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.order-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order-card__head > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.order-card__head strong {
+  font-size: 0.95rem;
+}
+
+.order-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 10px;
+  color: var(--optic-muted);
+  font-size: 0.79rem;
+}
+
+.order-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.order-card__meta .material-icons {
+  font-size: 16px;
+  color: #93adad;
+}
+
+.order-card__money {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  border-top: 1px dashed #edf3f3;
+  margin-top: 10px;
+  padding-top: 9px;
+}
+
+.order-card__money strong {
+  font-size: 1.05rem;
+  color: #173c3c;
+}
+
+.order-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 11px;
+  flex-wrap: wrap;
+}
+
+.order-card__actions .btn {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 720px) {
+  .filters {
+    gap: 10px;
+  }
+
+  .filter-field {
+    flex: 1 1 40%;
+  }
+
+  .filter-field select,
+  .filter-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filters > .btn {
+    flex: 1 1 100%;
+  }
+}

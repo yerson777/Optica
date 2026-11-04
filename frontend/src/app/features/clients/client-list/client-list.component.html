@@ -1,0 +1,109 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Buscar cliente</h1>
+      <p>Escribe el nombre o el celular. Los resultados aparecen mientras escribes.</p>
+    </div>
+    <div class="page-header__actions">
+      <a routerLink="/clientes/nuevo" class="btn btn--primary">
+        <span class="material-icons">person_add</span>
+        Nuevo cliente
+      </a>
+    </div>
+  </header>
+
+  <div class="client-search">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input
+        class="search-input"
+        type="search" maxlength="100"
+        placeholder="Nombre completo o número de celular…"
+        [value]="searchTerm()"
+        (input)="onSearchInput($event)"
+        autofocus
+        aria-label="Buscar cliente"
+      />
+      @if (searchTerm()) {
+        <button type="button" class="client-search__clear" (click)="clearSearch()" aria-label="Limpiar búsqueda">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
+    <div class="client-search__meta muted small">
+      @if (loading()) {
+        Buscando…
+      } @else {
+        {{ total() }} {{ total() === 1 ? 'cliente encontrado' : 'clientes encontrados' }}
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  @if (!loading() && items().length === 0) {
+    <div class="empty-state" style="margin-top: 18px;">
+      <span class="material-icons">person_search</span>
+      <h3>No encontramos clientes</h3>
+      <p>
+        @if (searchTerm()) {
+          Prueba con otra parte del nombre o con el número de celular.
+        } @else {
+          Todavía no hay clientes registrados. Comienza registrando al primero.
+        }
+      </p>
+      <a routerLink="/clientes/nuevo" class="btn btn--primary" style="margin-top: 14px;">
+        <span class="material-icons">person_add</span>
+        Registrar cliente
+      </a>
+    </div>
+  } @else {
+    <div class="client-grid">
+      @for (client of items(); track client.id) {
+        <button type="button" class="client-card" (click)="openClient(client)">
+          <div class="client-card__head">
+            <span class="client-card__avatar">{{ client.full_name.charAt(0) }}</span>
+            <div class="client-card__name">
+              <strong>{{ client.full_name }}</strong>
+              <span>{{ phone(client) }}</span>
+            </div>
+            @if (client.latest_order) {
+              <app-status-chip [status]="client.latest_order.status" />
+            }
+          </div>
+
+          <div class="client-card__meta">
+            <span>
+              <mat-icon>shopping_bag</mat-icon>
+              {{ client.orders_count ?? 0 }} pedidos
+            </span>
+            <span>
+              <mat-icon>description</mat-icon>
+              {{ client.prescriptions_count ?? 0 }} recetas
+            </span>
+            @if (client.latest_order) {
+              <span>
+                <mat-icon>event</mat-icon>
+                Último: {{ client.latest_order.ordered_at | date: 'dd/MM/yyyy' }}
+              </span>
+            } @else {
+              <span>
+                <mat-icon>event</mat-icon>
+                Sin pedidos
+              </span>
+            }
+          </div>
+
+          <span class="client-card__open">
+            Abrir ficha
+            <mat-icon>arrow_forward</mat-icon>
+          </span>
+        </button>
+      }
+    </div>
+
+    <app-pager [page]="page()" [lastPage]="lastPage()" (pageChange)="goToPage($event)" />
+  }
+</div>

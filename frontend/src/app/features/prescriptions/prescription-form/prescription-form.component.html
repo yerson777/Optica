@@ -1,0 +1,173 @@
+<div class="page page--narrow">
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <a [routerLink]="backLink()" class="back-link">
+    <span class="material-icons">arrow_back</span>
+    {{ client() ? 'Volver a la ficha' : 'Volver a clientes' }}
+  </a>
+
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Nueva receta</h1>
+      <p>
+        @if (client(); as client) {
+          Para <strong>{{ client.full_name }}</strong>. Toma una foto clara de la receta física.
+        } @else {
+          Toma una foto clara de la receta física.
+        }
+      </p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="banner banner--danger" style="margin-bottom: 14px;">
+      <span class="material-icons">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <div class="card stack">
+    <div class="capture">
+      <div class="capture__intro">
+        <span class="material-icons capture__icon">photo_camera</span>
+        <div>
+          <h2>Fotografía de la receta</h2>
+          <p class="muted small">
+            Asegúrate de que la receta se vea completa, nítida y con buena luz. Puedes agregar
+            hasta {{ maxPhotos }} fotos.
+          </p>
+        </div>
+      </div>
+
+      <div class="capture__buttons">
+        <button
+          type="button"
+          class="btn btn--primary"
+          (click)="openCamera(cameraInput)"
+          [disabled]="photos().length >= maxPhotos"
+        >
+          <span class="material-icons">photo_camera</span>
+          Tomar foto
+        </button>
+        <button
+          type="button"
+          class="btn btn--outline"
+          (click)="openCamera(galleryInput)"
+          [disabled]="photos().length >= maxPhotos"
+        >
+          <span class="material-icons">photo_library</span>
+          Elegir de galería
+        </button>
+
+        <input
+          #cameraInput
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+          (change)="onFilesSelected($event, cameraInput)"
+        />
+        <input
+          #galleryInput
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          hidden
+          (change)="onFilesSelected($event, galleryInput)"
+        />
+      </div>
+
+      <p class="capture__hint small muted">
+        En la computadora se abrirá la cámara web y en el celular la cámara del dispositivo.
+        Si no está disponible, usa “Elegir de galería” o sube la imagen desde tu equipo.
+      </p>
+    </div>
+
+    @if (photos().length) {
+      <div>
+        <div class="photos-head">
+          <strong>{{ photos().length }} {{ photos().length === 1 ? 'fotografía' : 'fotografías' }}</strong>
+          <span class="muted small">Revisa que se puedan leer bien.</span>
+        </div>
+        <div class="photo-grid">
+          @for (photo of photos(); track photo.preview; let i = $index) {
+            <div class="photo-preview">
+              <img [src]="photo.preview" [alt]="photo.name" />
+              <button
+                type="button"
+                class="photo-preview__remove"
+                (click)="removePhoto(i)"
+                aria-label="Quitar fotografía"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+              <span class="photo-preview__label">Foto {{ i + 1 }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="photo-empty">
+        <span class="material-icons">add_a_photo</span>
+        <p>Aún no hay fotografías. Toma o selecciona al menos una para guardar la receta.</p>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+      <p class="form-required-note">Los campos con * son obligatorios.</p>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de la receta</mat-label>
+          <input matInput type="date" formControlName="registered_at" [max]="today" />
+          <mat-hint>Fecha en que el profesional emitió la receta.</mat-hint>
+          @if (form.controls.registered_at.touched && form.controls.registered_at.invalid) {
+            <mat-error>
+              @if (form.controls.registered_at.errors?.['futureDate']) {
+                La fecha no puede ser futura.
+              } @else {
+                Selecciona la fecha de la receta.
+              }
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Observaciones (opcional)</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            maxlength="2000"
+            formControlName="observations"
+            placeholder="Ej. Receta para lentes progresivos, control anual…"
+          ></textarea>
+          <mat-hint>Opcional: indicaciones del profesional o detalles del control.</mat-hint>
+          <mat-hint align="end">{{ form.controls.observations.value.length }} / 2000</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn--primary btn--lg"
+          [disabled]="saving() || loading() || !client()"
+        >
+          @if (saving()) {
+            <span class="spinner"></span>
+            Guardando…
+          } @else if (loading()) {
+            <span class="spinner"></span>
+            Cargando cliente…
+          } @else {
+            <span class="material-icons">save</span>
+            Guardar receta
+          }
+        </button>
+        <a [routerLink]="backLink()" class="btn btn--outline btn--lg">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

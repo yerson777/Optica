@@ -1,0 +1,177 @@
+<div class="page dashboard">
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <header class="dashboard__welcome">
+    <div>
+      <p class="dashboard__eyebrow">{{ today | date: 'EEEE d MMMM' }}</p>
+      <h1>Hola, {{ firstName() }}</h1>
+      <p class="muted">Este es el resumen de hoy. ¿Con qué quieres empezar?</p>
+    </div>
+    <a routerLink="/clientes/nuevo" class="btn btn--primary btn--lg">
+      <span class="material-icons">person_add</span>
+      Registrar cliente
+    </a>
+  </header>
+
+  @if (error()) {
+    <div class="banner banner--danger" style="margin-bottom: 16px;">
+      <span class="material-icons">error</span>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn--sm btn--outline" (click)="load()">Reintentar</button>
+    </div>
+  }
+
+  <section class="quick-grid" aria-label="Accesos principales">
+    @for (action of quickActions; track action.route) {
+      <a
+        class="quick-card"
+        [ngClass]="'quick-card--' + action.tone"
+        [routerLink]="action.route"
+        [queryParams]="action.queryParams || {}"
+      >
+        <span class="quick-card__icon material-icons">{{ action.icon }}</span>
+        <span class="quick-card__body">
+          <strong>{{ action.label }}</strong>
+          <span>{{ action.description }}</span>
+        </span>
+        <span class="material-icons quick-card__arrow">arrow_forward</span>
+      </a>
+    }
+  </section>
+
+  <section class="stats-grid" aria-label="Estadísticas">
+    <a class="stat-card" routerLink="/clientes">
+      <span class="stat-card__icon stat-card__icon--teal material-icons">groups</span>
+      <div>
+        <span class="stat-card__label">Clientes registrados</span>
+        <strong class="stat-card__value">{{ loading() ? '—' : (data()?.stats?.total_clients ?? 0) }}</strong>
+      </div>
+    </a>
+
+    <a class="stat-card" routerLink="/pedidos" [queryParams]="{ status: 'pending' }">
+      <span class="stat-card__icon stat-card__icon--orange material-icons">pending_actions</span>
+      <div>
+        <span class="stat-card__label">Pedidos pendientes</span>
+        <strong class="stat-card__value">{{ loading() ? '—' : (data()?.stats?.pending_orders ?? 0) }}</strong>
+      </div>
+    </a>
+
+    <a class="stat-card" routerLink="/entregas">
+      <span class="stat-card__icon stat-card__icon--green material-icons">local_shipping</span>
+      <div>
+        <span class="stat-card__label">Listos para entregar</span>
+        <strong class="stat-card__value">{{ loading() ? '—' : (data()?.stats?.ready_orders ?? 0) }}</strong>
+      </div>
+    </a>
+
+    <a class="stat-card" routerLink="/historial" [queryParams]="{ status: 'delivered' }">
+      <span class="stat-card__icon stat-card__icon--blue material-icons">check_circle</span>
+      <div>
+        <span class="stat-card__label">Entregados este mes</span>
+        <strong class="stat-card__value">{{ loading() ? '—' : (data()?.stats?.delivered_this_month ?? 0) }}</strong>
+      </div>
+    </a>
+  </section>
+
+  <section class="dashboard__columns">
+    <div class="card alerts-card">
+      <div class="card-head">
+        <div>
+          <h2>Avisos importantes</h2>
+          <p class="muted small">Pedidos listos y pendientes que necesitan atención.</p>
+        </div>
+        <a routerLink="/avisos" class="btn btn--ghost btn--sm">Ver todos</a>
+      </div>
+
+      @if (loading()) {
+        <div class="empty-state alerts-empty">
+          <span class="material-icons">hourglass_top</span>
+          <h3>Cargando avisos…</h3>
+        </div>
+      } @else if ((data()?.alerts?.length ?? 0) === 0) {
+        <div class="empty-state alerts-empty">
+          <span class="material-icons">notifications_off</span>
+          <h3>Todo en orden</h3>
+          <p>No tienes avisos pendientes por ahora.</p>
+        </div>
+      } @else {
+        <ul class="alert-list">
+          @for (alert of data()?.alerts; track alert.id) {
+            <li>
+              <button
+                type="button"
+                class="alert-item"
+                [class.alert-item--ready]="alert.type === 'ready'"
+                [class.alert-item--overdue]="alert.type === 'overdue'"
+                [class.alert-item--stale]="alert.type === 'stale'"
+                [routerLink]="alert.order_id ? ['/pedidos', alert.order_id] : null"
+              >
+                <span class="alert-item__icon material-icons">
+                  {{
+                    alert.type === 'ready'
+                      ? 'notifications_active'
+                      : alert.type === 'stale'
+                        ? 'priority_high'
+                        : 'schedule'
+                  }}
+                </span>
+                <span class="alert-item__body">
+                  <span>{{ alert.message }}</span>
+                  <small>{{ alert.created_at | date: 'dd/MM/yyyy HH:mm' }}</small>
+                </span>
+                <span class="material-icons alert-item__arrow">chevron_right</span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="card recent-card">
+      <div class="card-head">
+        <div>
+          <h2>Pedidos en proceso</h2>
+          <p class="muted small">Los pedidos más antiguos que siguen abiertos.</p>
+        </div>
+        <a routerLink="/pedidos" class="btn btn--ghost btn--sm">Ver pedidos</a>
+      </div>
+
+      @if (loading()) {
+        <div class="empty-state">
+          <span class="material-icons">hourglass_top</span>
+          <h3>Cargando pedidos…</h3>
+        </div>
+      } @else if ((data()?.recent_orders?.length ?? 0) === 0) {
+        <div class="empty-state">
+          <span class="material-icons">inventory_2</span>
+          <h3>Sin pedidos abiertos</h3>
+          <p>Cuando registres un pedido aparecerá aquí.</p>
+        </div>
+      } @else {
+        <ul class="recent-list">
+          @for (order of data()?.recent_orders; track order.id) {
+            <li class="recent-item" [routerLink]="['/pedidos', order.id]">
+              <div class="recent-item__main">
+                <strong>{{ order.client?.full_name }}</strong>
+                <span class="muted small">{{ order.lens_type }} · {{ order.ordered_at | date: 'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="recent-item__side">
+                <app-status-chip [status]="order.status" />
+                <span class="muted tiny">{{ order.days_pending }} días</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </section>
+
+  @if (data()?.pending_alert_days; as days) {
+    <p class="dashboard__note small muted">
+      <span class="material-icons">info</span>
+      Los pedidos pendientes generan un aviso después de {{ days }} días. Puedes ajustar ese plazo en Avisos.
+    </p>
+  }
+</div>

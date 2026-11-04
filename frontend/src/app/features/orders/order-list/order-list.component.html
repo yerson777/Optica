@@ -1,0 +1,202 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>{{ statusFilter() === 'pending' ? 'Pedidos pendientes' : 'Pedidos' }}</h1>
+      <p>Consulta, actualiza el estado y controla la entrega de cada pedido.</p>
+    </div>
+    <div class="page-header__actions">
+      <a routerLink="/clientes" class="btn btn--primary">
+        <span class="material-icons">add</span>
+        Nuevo pedido desde una ficha
+      </a>
+    </div>
+  </header>
+
+  <div class="filters card">
+    <div class="filters__search">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input
+          class="search-input"
+          type="search" maxlength="100"
+          placeholder="Buscar por cliente o celular…"
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+    </div>
+
+    <label class="filter-field">
+      <span>Estado</span>
+      <select [value]="statusFilter()" (change)="onStatusChange($event)">
+        <option value="">Todos</option>
+        <option value="pending">Pendientes</option>
+        <option value="ready">Listos para entregar</option>
+        <option value="delivered">Entregados</option>
+        <option value="cancelled">Cancelados</option>
+      </select>
+    </label>
+
+    <label class="filter-field">
+      <span>Desde</span>
+      <input type="date" [value]="dateFrom()" (change)="onDateChange('from', $event)" />
+    </label>
+
+    <label class="filter-field">
+      <span>Hasta</span>
+      <input type="date" [value]="dateTo()" (change)="onDateChange('to', $event)" />
+    </label>
+
+    <button type="button" class="btn btn--ghost btn--sm" (click)="resetFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      Limpiar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <div class="results-meta muted small">
+    @if (!loading()) {
+      {{ total() }} {{ total() === 1 ? 'pedido' : 'pedidos' }} encontrados
+    }
+  </div>
+
+  @if (!loading() && items().length === 0) {
+    <div class="empty-state">
+      <span class="material-icons">shopping_bag</span>
+      <h3>No hay pedidos con estos filtros</h3>
+      <p>Cambia los filtros o registra un pedido desde la ficha de un cliente.</p>
+      <a routerLink="/clientes" class="btn btn--primary" style="margin-top: 14px;">
+        <span class="material-icons">manage_search</span>
+        Buscar cliente
+      </a>
+    </div>
+  } @else {
+    <div class="desktop-only">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Pedido</th>
+              <th>Estado</th>
+              <th>Días</th>
+              <th>Saldo</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of items(); track order.id) {
+              <tr>
+                <td>
+                  <div class="cell-main">{{ order.client?.full_name }}</div>
+                  <div class="cell-sub">{{ phone(order) }}</div>
+                </td>
+                <td>
+                  <div class="cell-main">{{ order.lens_type }}</div>
+                  <div class="cell-sub">
+                    #{{ order.id }} · {{ order.ordered_at | date: 'dd/MM/yyyy' }}
+                  </div>
+                </td>
+                <td><app-status-chip [status]="order.status" /></td>
+                <td>
+                  <span class="days">{{ order.days_pending }}</span>
+                </td>
+                <td>
+                  @if (order.price !== null) {
+                    <div class="cell-main">{{ money(order.balance) }}</div>
+                    <div class="cell-sub">de {{ money(order.price) }}</div>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--outline btn--sm" (click)="open(order)">
+                      Abrir
+                    </button>
+                    @if (order.status === 'pending') {
+                      <button
+                        type="button"
+                        class="btn btn--soft btn--sm"
+                        [disabled]="busyId() === order.id"
+                        (click)="markReady(order)"
+                      >
+                        Listo
+                      </button>
+                    }
+                    @if (order.status === 'ready') {
+                      <button
+                        type="button"
+                        class="btn btn--success btn--sm"
+                        [disabled]="busyId() === order.id"
+                        (click)="markDelivered(order)"
+                      >
+                        Entregar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mobile-only order-cards">
+      @for (order of items(); track order.id) {
+        <article class="order-card">
+          <div class="order-card__head">
+            <div>
+              <strong>{{ order.client?.full_name }}</strong>
+              <span class="muted small">{{ phone(order) }}</span>
+            </div>
+            <app-status-chip [status]="order.status" />
+          </div>
+          <div class="order-card__meta">
+            <span><mat-icon>visibility</mat-icon> {{ order.lens_type }}</span>
+            <span><mat-icon>event</mat-icon> {{ order.ordered_at | date: 'dd/MM/yyyy' }}</span>
+            <span><mat-icon>schedule</mat-icon> {{ order.days_pending }} días</span>
+          </div>
+          @if (order.price !== null) {
+            <div class="order-card__money">
+              <span class="muted small">Saldo</span>
+              <strong>{{ money(order.balance) }}</strong>
+              <span class="muted tiny">de {{ money(order.price) }}</span>
+            </div>
+          }
+          <div class="order-card__actions">
+            <button type="button" class="btn btn--outline btn--sm" (click)="open(order)">
+              Abrir pedido
+            </button>
+            @if (order.status === 'pending') {
+              <button
+                type="button"
+                class="btn btn--soft btn--sm"
+                [disabled]="busyId() === order.id"
+                (click)="markReady(order)"
+              >
+                Marcar listo
+              </button>
+            }
+            @if (order.status === 'ready') {
+              <button
+                type="button"
+                class="btn btn--success btn--sm"
+                [disabled]="busyId() === order.id"
+                (click)="markDelivered(order)"
+              >
+                Entregar
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+
+    <app-pager [page]="page()" [lastPage]="lastPage()" (pageChange)="goToPage($event)" />
+  }
+</div>

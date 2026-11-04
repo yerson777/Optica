@@ -1,0 +1,33 @@
+# Artefactos generados
+/apk/
+/frontend/android/app/build/
+
+# Respaldos y secretos
+/backups/
+/backend/.env
+/backend/.env.backup
+/backend/.env.production
+
+# Backend
+/backend/vendor/
+/backend/node_modules/
+/backend/public/build/
+/backend/public/hot/
+/backend/public/storage/
+/backend/storage/app/private/
+/backend/storage/logs/*.log
+/backend/storage/pail/
+/backend/.phpunit.cache/
+/backend/.phpunit.result.cache
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular/
+/frontend/coverage/
+/frontend/e2e/screenshots/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

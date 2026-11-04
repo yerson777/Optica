@@ -1,0 +1,192 @@
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    #sidenav
+    class="sidebar"
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="sidenavOpen()"
+    (openedChange)="sidenavOpen.set($event)"
+  >
+    <div class="brand" routerLink="/inicio" (click)="isMobile() && sidenavOpen.set(false)">
+      <div class="brand__mark">
+        <span class="material-icons">visibility</span>
+      </div>
+      <div>
+        <div class="brand__name">Óptica</div>
+        <div class="brand__sub">Gestión del local</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      @for (item of navItems; track item.route) {
+        <a
+          class="nav-item"
+          [class.nav-item--active]="isActive(item)"
+          [routerLink]="item.route"
+          (click)="isMobile() && sidenavOpen.set(false)"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <span>{{ item.label }}</span>
+          @if (item.route === '/avisos' && unreadCount() > 0) {
+            <span class="nav-item__badge">{{ unreadCount() }}</span>
+          }
+        </a>
+      }
+
+      @if (!pwa.installed()) {
+        <button type="button" class="nav-item nav-item--button" (click)="onInstallClick()">
+          <mat-icon>install_mobile</mat-icon>
+          <span>Instalar app</span>
+        </button>
+      }
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="sidebar__user">
+        <div class="avatar">{{ (user()?.name || 'U').charAt(0) }}</div>
+        <div class="sidebar__user-info">
+          <strong>{{ user()?.name }}</strong>
+          <span>{{ user()?.username }}</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn--ghost btn--sm btn--block" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Cerrar sesión
+      </button>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <mat-toolbar class="topbar">
+      <button
+        mat-icon-button
+        type="button"
+        class="topbar__icon mobile-only"
+        (click)="toggleSidenav()"
+        aria-label="Abrir menú"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <a routerLink="/inicio" class="topbar__brand mobile-only">
+        <span class="material-icons">visibility</span>
+        Óptica
+      </a>
+
+      <div class="topbar__search desktop-only">
+        <div class="search-box">
+          <mat-icon>search</mat-icon>
+          <input
+            class="search-input"
+            type="search" maxlength="100"
+            placeholder="Buscar por nombre o celular…"
+            [value]="searchTerm()"
+            (input)="onSearchInput($event)"
+            (focus)="onSearchFocus()"
+            (blur)="onSearchBlur()"
+            (keydown.enter)="submitGlobalSearch()"
+            aria-label="Buscar cliente"
+          />
+        </div>
+
+        @if (showResults()) {
+          <div class="search-results">
+            @if (searching()) {
+              <div class="search-results__status">
+                <mat-progress-bar mode="indeterminate" />
+              </div>
+            }
+            @if (!searching() && results().length === 0 && searchTerm().trim() !== '') {
+              <div class="search-results__empty">
+                No encontramos clientes con ese dato.
+              </div>
+            }
+            @for (client of results(); track client.id) {
+              <button type="button" class="search-result" (click)="selectClient(client)">
+                <span class="search-result__avatar">{{ client.full_name.charAt(0) }}</span>
+                <span class="search-result__info">
+                  <strong>{{ client.full_name }}</strong>
+                  <span>{{ client.phone }}</span>
+                </span>
+                <span class="material-icons">chevron_right</span>
+              </button>
+            }
+            @if (results().length > 0) {
+              <button type="button" class="search-results__all" (click)="submitGlobalSearch()">
+                Ver todos los resultados
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <span class="spacer"></span>
+
+      <button
+        mat-icon-button
+        type="button"
+        class="topbar__icon mobile-only"
+        (click)="openSearchPage()"
+        aria-label="Buscar cliente"
+      >
+        <mat-icon>search</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        type="button"
+        class="topbar__icon"
+        (click)="goToNotifications()"
+        aria-label="Avisos"
+      >
+        <mat-icon
+          [matBadge]="unreadCount()"
+          [matBadgeHidden]="unreadCount() === 0"
+          matBadgeColor="warn"
+          matBadgeSize="small"
+          >notifications</mat-icon
+        >
+      </button>
+
+      <button
+        mat-button
+        type="button"
+        class="topbar__user desktop-only"
+        [matMenuTriggerFor]="userMenu"
+      >
+        <span class="avatar avatar--sm">{{ (user()?.name || 'U').charAt(0) }}</span>
+        {{ user()?.name }}
+        <mat-icon>expand_more</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        type="button"
+        class="topbar__icon mobile-only"
+        [matMenuTriggerFor]="userMenu"
+        aria-label="Cuenta"
+      >
+        <mat-icon>account_circle</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu">
+        <div class="menu-user">
+          <strong>{{ user()?.name }}</strong>
+          <span>{{ user()?.username }}</span>
+        </div>
+        <mat-divider />
+        <button mat-menu-item type="button" (click)="changePassword()">
+          <mat-icon>lock_reset</mat-icon>
+          <span>Cambiar contraseña</span>
+        </button>
+        <button mat-menu-item type="button" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Cerrar sesión</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main class="main">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

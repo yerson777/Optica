@@ -1,0 +1,225 @@
+<div class="page">
+  @if (loading()) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate" />
+  }
+
+  <a routerLink="/clientes" class="back-link">
+    <span class="material-icons">arrow_back</span>
+    Volver a la búsqueda
+  </a>
+
+  @if (error()) {
+    <div class="banner banner--danger">
+      <span class="material-icons">error</span>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn--sm btn--outline" (click)="load()">Reintentar</button>
+    </div>
+  }
+
+  @if (client(); as client) {
+    <section class="profile card">
+      <div class="profile__identity">
+        <span class="profile__avatar">{{ client.full_name.charAt(0) }}</span>
+        <div class="profile__info">
+          <h1>{{ client.full_name }}</h1>
+          <div class="profile__contact">
+            <span><mat-icon>smartphone</mat-icon> {{ phone() }}</span>
+            <span><mat-icon>event</mat-icon> Registrado el {{ client.created_at | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          @if (client.observations) {
+            <p class="profile__obs">{{ client.observations }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="profile__stats">
+        <div class="profile__stat">
+          <strong>{{ client.prescriptions_count ?? 0 }}</strong>
+          <span>Recetas</span>
+        </div>
+        <div class="profile__stat">
+          <strong>{{ client.orders_count ?? 0 }}</strong>
+          <span>Pedidos</span>
+        </div>
+      </div>
+
+      <div class="profile__actions">
+        <a [routerLink]="['/clientes', client.id, 'editar']" class="btn btn--outline">
+          <span class="material-icons">edit</span>
+          Editar datos
+        </a>
+        <button type="button" class="btn btn--outline" (click)="newPrescription()">
+          <span class="material-icons">photo_camera</span>
+          Nueva receta
+        </button>
+        <button
+          type="button"
+          class="btn btn--primary btn--lg"
+          (click)="newOrder()"
+          [matTooltip]="hasPrescriptions ? '' : 'Primero registra una receta'"
+        >
+          <span class="material-icons">add_shopping_cart</span>
+          Nuevo pedido
+        </button>
+      </div>
+    </section>
+
+    <div class="detail-columns">
+      <section class="card" id="recetas">
+        <div class="section-head">
+          <div>
+            <h2>Recetas</h2>
+            <p class="muted small">Fotografías y anotaciones de cada medida registrada.</p>
+          </div>
+          <button type="button" class="btn btn--soft btn--sm" (click)="newPrescription()">
+            <span class="material-icons">add_a_photo</span>
+            Agregar receta
+          </button>
+        </div>
+
+        @if ((client.prescriptions?.length ?? 0) === 0) {
+          <div class="empty-state">
+            <span class="material-icons">photo_camera_back</span>
+            <h3>Todavía no hay recetas</h3>
+            <p>Toma una fotografía de la receta física para conservarla digitalmente.</p>
+            <button type="button" class="btn btn--primary" style="margin-top: 14px;" (click)="newPrescription()">
+              <span class="material-icons">photo_camera</span>
+              Registrar primera receta
+            </button>
+          </div>
+        } @else {
+          <div class="timeline">
+            @for (prescription of client.prescriptions; track prescription.id) {
+              <article class="prescription">
+                <div class="prescription__dot"></div>
+                <div class="prescription__body">
+                  <div class="prescription__head">
+                    <div>
+                      <strong>{{ prescription.registered_at | date: 'dd/MM/yyyy' }}</strong>
+                      <span class="muted small">
+                        {{ prescription.created_by ? 'Registrada por ' + (prescription.creator?.name || 'usuario') : '' }}
+                      </span>
+                    </div>
+                    <span class="count-pill">
+                      {{ orderCount(prescription) }}
+                      {{ orderCount(prescription) === 1 ? 'pedido' : 'pedidos' }}
+                    </span>
+                  </div>
+
+                  @if (prescription.observations) {
+                    <p class="prescription__obs">{{ prescription.observations }}</p>
+                  }
+
+                  @if (prescription.images.length) {
+                    <div class="photo-grid prescription__photos">
+                      @for (image of prescription.images; track image.id) {
+                        <button
+                          type="button"
+                          class="photo-thumb"
+                          (click)="openImage(image)"
+                          [attr.aria-label]="'Ver fotografía ' + image.original_name"
+                        >
+                          <app-auth-image [image]="image" />
+                          <span class="photo-thumb__badge">Ver</span>
+                        </button>
+                      }
+                    </div>
+                  }
+
+                  @if (prescription.orders?.length) {
+                    <div class="prescription__orders">
+                      <span class="muted small">Pedidos con esta receta:</span>
+                      @for (order of prescription.orders; track order.id) {
+                        <a [routerLink]="['/pedidos', order.id]" class="mini-order">
+                          #{{ order.id }} · {{ order.status_label }}
+                        </a>
+                      }
+                    </div>
+                  }
+
+                  <div class="prescription__actions">
+                    <button
+                      type="button"
+                      class="btn btn--outline btn--sm"
+                      (click)="newOrder(prescription)"
+                    >
+                      <span class="material-icons">replay</span>
+                      Usar esta medida
+                    </button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+
+        <app-pager
+          [page]="prescriptionsPage()"
+          [lastPage]="prescriptionsLastPage()"
+          (pageChange)="goPrescriptionsPage($event)"
+        />
+      </section>
+
+      <section class="card" id="pedidos">
+        <div class="section-head">
+          <div>
+            <h2>Pedidos</h2>
+            <p class="muted small">Todo lo que se ha mandado a hacer para este cliente.</p>
+          </div>
+          @if (hasPrescriptions) {
+            <button type="button" class="btn btn--soft btn--sm" (click)="newOrder()">
+              <span class="material-icons">add</span>
+              Nuevo
+            </button>
+          }
+        </div>
+
+        @if ((client.orders?.length ?? 0) === 0) {
+          <div class="empty-state">
+            <span class="material-icons">shopping_bag</span>
+            <h3>Sin pedidos</h3>
+            <p>Los pedidos que registres aparecerán aquí con su estado.</p>
+          </div>
+        } @else {
+          <ul class="order-list">
+            @for (order of client.orders; track order.id) {
+              <li>
+                <a class="order-row" [routerLink]="['/pedidos', order.id]">
+                  <div class="order-row__top">
+                    <div>
+                      <strong>{{ order.lens_type }}</strong>
+                      <span class="muted small">
+                        Pedido #{{ order.id }} · {{ order.ordered_at | date: 'dd/MM/yyyy' }}
+                      </span>
+                    </div>
+                    <app-status-chip [status]="order.status" />
+                  </div>
+                  <div class="order-row__bottom">
+                    <span class="muted small">
+                      @if (order.price !== null) {
+                        Total {{ money(order.price) }}
+                        @if (order.balance !== null) {
+                          · Saldo {{ money(order.balance) }}
+                        }
+                      } @else {
+                        Precio no registrado
+                      }
+                    </span>
+                    <span class="muted small">{{ order.days_pending }} días</span>
+                    <span class="material-icons">chevron_right</span>
+                  </div>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+
+        <app-pager
+          [page]="ordersPage()"
+          [lastPage]="ordersLastPage()"
+          (pageChange)="goOrdersPage($event)"
+        />
+      </section>
+    </div>
+  }
+</div>
