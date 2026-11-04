@@ -393,3 +393,36 @@
     font-size: 20px;
   }
 }
+
+@media (max-width: 599px) {
+  .quick-grid,
+  .stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .quick-card {
+    flex-direction: row;
+    align-items: center;
+    min-height: 76px;
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .quick-card__arrow {
+    display: block;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+  }
+
+  .recent-item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .recent-item__side {
+    margin-left: auto;
+  }
+}

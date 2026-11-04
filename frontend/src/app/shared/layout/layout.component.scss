@@ -1,5 +1,6 @@
 .shell {
   height: 100dvh;
+  min-height: 100dvh;
   background: var(--optic-bg);
 }
 
@@ -165,6 +166,7 @@
 
 .content {
   background: var(--optic-bg);
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -346,7 +348,7 @@
 
 @media (max-width: 900px) {
   .sidebar {
-    width: 280px;
+    width: min(280px, 86vw);
   }
 
   .topbar {
@@ -356,5 +358,17 @@
 
   .main {
     min-height: calc(100dvh - 62px);
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar {
+    gap: 2px;
+    padding: 0 4px;
+  }
+
+  .topbar__brand {
+    gap: 4px;
+    font-size: 0.96rem;
   }
 }

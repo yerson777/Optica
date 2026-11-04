@@ -376,3 +376,19 @@
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
 }
+
+@media (max-width: 599px) {
+  .profile__actions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .profile__actions .btn {
+    width: 100%;
+  }
+
+  .order-row__bottom {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+}

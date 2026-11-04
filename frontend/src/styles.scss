@@ -1,4 +1,22 @@
 :root {
+  --app-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+
+  --mat-sys-display-large-font: var(--app-font-family);
+  --mat-sys-display-medium-font: var(--app-font-family);
+  --mat-sys-display-small-font: var(--app-font-family);
+  --mat-sys-headline-large-font: var(--app-font-family);
+  --mat-sys-headline-medium-font: var(--app-font-family);
+  --mat-sys-headline-small-font: var(--app-font-family);
+  --mat-sys-title-large-font: var(--app-font-family);
+  --mat-sys-title-medium-font: var(--app-font-family);
+  --mat-sys-title-small-font: var(--app-font-family);
+  --mat-sys-body-large-font: var(--app-font-family);
+  --mat-sys-body-medium-font: var(--app-font-family);
+  --mat-sys-body-small-font: var(--app-font-family);
+  --mat-sys-label-large-font: var(--app-font-family);
+  --mat-sys-label-medium-font: var(--app-font-family);
+  --mat-sys-label-small-font: var(--app-font-family);
+
   --mat-sys-primary: #00a0a0;
   --mat-sys-on-primary: #ffffff;
   --mat-sys-primary-container: #d2f3f3;
@@ -39,17 +57,31 @@
 html,
 body {
   min-height: 100%;
+  max-width: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  font-family: var(--app-font-family);
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  min-height: 100dvh;
+  font-family: var(--app-font-family);
   background: var(--optic-bg);
   color: var(--optic-text);
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
 }
 
 h1,
@@ -340,7 +372,7 @@ textarea {
 /* Forms */
 .form-grid {
   display: grid;
-  gap: 8px 18px;
+  gap: 12px 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -369,6 +401,9 @@ textarea {
   color: var(--optic-danger);
   font-size: 0.8rem;
   margin: 2px 0 8px;
+  height: auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .required {
@@ -603,6 +638,13 @@ textarea {
 /* Material tweaks */
 .mat-mdc-form-field {
   width: 100%;
+  --mat-form-field-container-text-font: var(--app-font-family);
+  --mat-form-field-outlined-label-text-font: var(--app-font-family);
+  --mat-form-field-filled-label-text-font: var(--app-font-family);
+  --mat-form-field-subscript-text-font: var(--app-font-family);
+  --mat-form-field-subscript-text-size: 13px;
+  --mat-form-field-subscript-text-line-height: 1.4;
+  --mat-form-field-subscript-text-weight: 400;
 }
 
 .mat-mdc-text-field-wrapper {
@@ -611,7 +653,52 @@ textarea {
 }
 
 .mat-mdc-form-field-subscript-wrapper {
-  font-size: 0.78rem;
+  font-family: var(--app-font-family);
+  font-size: 13px;
+  line-height: 1.4;
+  min-height: 18px;
+}
+
+/* Angular Material places hints/errors absolutely; with long helper texts they
+   overlap the following field/button. Make the subscript take part in layout so
+   both hints and errors reserve the height they actually need. */
+.mat-mdc-form-field .mat-mdc-form-field-hint-wrapper,
+.mat-mdc-form-field .mat-mdc-form-field-error-wrapper {
+  position: static !important;
+  padding: 5px 0 2px;
+}
+
+.mat-mdc-form-field .mat-mdc-form-field-bottom-align::before {
+  content: none !important;
+}
+
+.mat-mdc-form-field mat-hint,
+.mat-mdc-form-field mat-error,
+.mat-mdc-form-field .mat-mdc-form-field-hint,
+.mat-mdc-form-field .mat-mdc-form-field-error {
+  font-family: var(--app-font-family);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--optic-muted);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.mat-mdc-form-field mat-error,
+.mat-mdc-form-field .mat-mdc-form-field-error {
+  color: var(--optic-danger);
+}
+
+.mat-mdc-form-field mat-hint:not(.mat-mdc-form-field-hint-end) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mat-mdc-form-field mat-hint.mat-mdc-form-field-hint-end {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .mat-mdc-snack-bar-container.app-snackbar--success .mdc-snackbar__surface {
@@ -627,6 +714,15 @@ textarea {
 .app-dialog .mat-mdc-dialog-surface {
   border-radius: 18px !important;
   padding: 6px;
+  max-height: 92dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.app-dialog .mat-mdc-dialog-content {
+  max-height: calc(92dvh - 130px);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Responsive */
@@ -712,5 +808,63 @@ textarea {
 
   .btn {
     min-height: 46px;
+  }
+}
+
+@media (max-width: 959px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+  select,
+  textarea,
+  .mat-mdc-input-element,
+  .mat-mdc-form-field-input-control,
+  .mat-mdc-select-value-text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 599px) {
+  .btn--sm {
+    min-height: 44px;
+  }
+
+  .notif-tab,
+  .history-tab {
+    min-height: 44px;
+  }
+
+  .client-search__clear,
+  .login__eye,
+  .photo-preview__remove {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-actions,
+  .btn-row,
+  .capture__buttons,
+  .profile__actions {
+    flex-direction: column;
+  }
+
+  .profile__actions {
+    display: flex;
+  }
+
+  .form-actions .btn,
+  .btn-row .btn,
+  .capture__buttons .btn,
+  .profile__actions .btn,
+  .order-card__actions .btn,
+  .delivery-card__actions .btn {
+    width: 100%;
+  }
+
+  .app-dialog {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .table-wrap {
+    -webkit-overflow-scrolling: touch;
   }
 }

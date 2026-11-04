@@ -152,6 +152,18 @@
   flex: 1 1 auto;
 }
 
+@media (max-width: 1023px) {
+  :host .desktop-only {
+    display: none !important;
+  }
+
+  :host .mobile-only.order-cards {
+    display: flex !important;
+    flex-direction: column;
+    gap: 11px;
+  }
+}
+
 @media (max-width: 720px) {
   .filters {
     gap: 10px;
