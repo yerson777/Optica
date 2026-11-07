@@ -21,9 +21,9 @@ class UpdateSettingsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'pending_alert_days.required' => 'Indica la cantidad de días para avisar de un pedido pendiente.',
-            'pending_alert_days.min' => 'El plazo mínimo es de 1 día.',
-            'pending_alert_days.max' => 'El plazo máximo es de 60 días.',
+            'pending_alert_days.required' => __('messages.validation.settings.days_required'),
+            'pending_alert_days.min' => __('messages.validation.settings.days_min'),
+            'pending_alert_days.max' => __('messages.validation.settings.days_max'),
         ];
     }
 }

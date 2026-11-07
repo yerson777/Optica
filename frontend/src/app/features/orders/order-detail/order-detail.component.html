@@ -57,6 +57,10 @@
 
         @if (order.status === 'ready') {
           <div class="order-hero__actions">
+            <button type="button" class="btn btn--success" [disabled]="busy()" (click)="sendWhatsApp(order)">
+              <span class="material-icons">smartphone</span>
+              Avisar por WhatsApp
+            </button>
             <button type="button" class="btn btn--success btn--lg" [disabled]="busy()" (click)="markDelivered()">
               <span class="material-icons">check_circle</span>
               Marcar como entregado

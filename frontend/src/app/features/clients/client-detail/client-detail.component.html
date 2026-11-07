@@ -153,10 +153,13 @@
           </div>
         }
 
-        <app-pager
+        <app-pagination
           [page]="prescriptionsPage()"
+          [pageSize]="pageSize()"
+          [total]="client?.prescriptions_count ?? 0"
           [lastPage]="prescriptionsLastPage()"
           (pageChange)="goPrescriptionsPage($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         />
       </section>
 
@@ -214,10 +217,13 @@
           </ul>
         }
 
-        <app-pager
+        <app-pagination
           [page]="ordersPage()"
+          [pageSize]="pageSize()"
+          [total]="client?.orders_count ?? 0"
           [lastPage]="ordersLastPage()"
           (pageChange)="goOrdersPage($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         />
       </section>
     </div>

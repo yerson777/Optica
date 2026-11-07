@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { ConfirmOptions } from '../../core/services/confirm-dialog.service';
 
 @Component({
@@ -13,7 +14,7 @@ import { ConfirmOptions } from '../../core/services/confirm-dialog.service';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button type="button" class="btn btn--outline" (click)="close(false)">
-        {{ data.cancelText || 'Cancelar' }}
+        {{ data.cancelText || messages.common.cancel }}
       </button>
       <button
         type="button"
@@ -22,7 +23,7 @@ import { ConfirmOptions } from '../../core/services/confirm-dialog.service';
         [class.btn--primary]="!data.danger"
         (click)="close(true)"
       >
-        {{ data.confirmText || 'Aceptar' }}
+        {{ data.confirmText || messages.common.accept }}
       </button>
     </mat-dialog-actions>
   `,
@@ -45,6 +46,7 @@ import { ConfirmOptions } from '../../core/services/confirm-dialog.service';
 })
 export class ConfirmDialogComponent {
   readonly data = inject<ConfirmOptions>(MAT_DIALOG_DATA);
+  readonly messages = MESSAGES;
   private readonly dialogRef = inject(MatDialogRef<ConfirmDialogComponent, boolean>);
 
   close(result: boolean): void {

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreClientRequest extends FormRequest
 {
@@ -26,8 +27,8 @@ class StoreClientRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name' => ['required', 'string', 'min:3', 'max:150'],
-            'phone' => ['required', 'string', 'regex:/^\+?\d{6,15}$/'],
+            'full_name' => ['required', 'string', 'min:3', 'max:150', Rule::unique('clients', 'full_name')],
+            'phone' => ['required', 'string', 'regex:/^\+?\d{6,15}$/', Rule::unique('clients', 'phone')],
             'observations' => ['nullable', 'string', 'max:2000'],
             'confirm_duplicate' => ['sometimes', 'boolean'],
         ];
@@ -36,10 +37,12 @@ class StoreClientRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'full_name.required' => 'El nombre del cliente es obligatorio.',
-            'full_name.min' => 'El nombre debe tener al menos 3 letras.',
-            'phone.required' => 'El celular es obligatorio.',
-            'phone.regex' => 'Escribe un número de celular válido (solo números, entre 6 y 15 dígitos).',
+            'full_name.required' => __('messages.validation.clients.full_name_required'),
+            'full_name.min' => __('messages.validation.clients.full_name_min'),
+            'full_name.unique' => __('messages.validation.clients.full_name_unique'),
+            'phone.required' => __('messages.validation.clients.phone_required'),
+            'phone.regex' => __('messages.validation.clients.phone_regex'),
+            'phone.unique' => __('messages.validation.clients.phone_unique'),
         ];
     }
 }

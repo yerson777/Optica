@@ -66,13 +66,10 @@ class ClientTest extends TestCase
         ];
 
         $this->postJson('/api/clients', $payload)
-            ->assertStatus(409)
-            ->assertJsonCount(1, 'duplicates');
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['full_name', 'phone']);
 
-        $this->postJson('/api/clients', $payload + ['confirm_duplicate' => true])
-            ->assertCreated();
-
-        $this->assertSame(2, Client::query()->count());
+        $this->assertSame(1, Client::query()->count());
     }
 
     public function test_clients_can_be_searched_by_name_or_phone(): void

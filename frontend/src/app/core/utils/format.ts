@@ -1,9 +1,15 @@
+import { MESSAGES } from '../i18n/messages.es';
+
 export function formatPhone(phone: string | null | undefined): string {
   if (!phone) {
-    return 'Sin celular';
+    return MESSAGES.common.noPhone;
   }
 
   const digits = phone.replace(/\D/g, '');
+
+  if (digits.length === 8) {
+    return `${digits.slice(0, 4)} ${digits.slice(4)}`;
+  }
 
   if (digits.length === 9) {
     return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
@@ -18,13 +24,13 @@ export function formatPhone(phone: string | null | undefined): string {
 
 export function formatCurrency(value: number | string | null | undefined): string {
   if (value === null || value === undefined || value === '') {
-    return '—';
+    return MESSAGES.common.emptyValue;
   }
 
   const numeric = typeof value === 'string' ? Number(value) : value;
 
   if (Number.isNaN(numeric)) {
-    return '—';
+    return MESSAGES.common.emptyValue;
   }
 
   return new Intl.NumberFormat('es-BO', {
@@ -53,4 +59,18 @@ export function toInputDate(value: string | Date | null | undefined): string {
 
 export function todayInputDate(): string {
   return toInputDate(new Date());
+}
+
+export function formatWhatsAppNumber(phone: string | null | undefined): string | null {
+  if (!phone) {
+    return null;
+  }
+
+  const cleaned = phone.replace(/[\s\-+]/g, '');
+
+  if (!/^\d+$/.test(cleaned) || cleaned.length < 8) {
+    return null;
+  }
+
+  return cleaned.length === 8 ? '591' + cleaned : cleaned;
 }

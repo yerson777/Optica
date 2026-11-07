@@ -14,7 +14,7 @@ export function phoneNumberValidator(control: AbstractControl): ValidationErrors
   const value = typeof control.value === 'string' ? control.value : '';
   const digits = value.replace(/\D/g, '');
 
-  if (digits.length < 6 || digits.length > 15) {
+  if (digits.length !== 8) {
     return { phone: true };
   }
 

@@ -22,13 +22,13 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($request->string('password'), $user->password)) {
             throw ValidationException::withMessages([
-                'username' => 'Usuario o contraseña incorrectos.',
+                'username' => __('messages.auth.invalid_credentials'),
             ]);
         }
 
         if (! $user->is_active) {
             return response()->json([
-                'message' => 'Tu usuario está inactivo. Contacta al administrador.',
+                'message' => __('messages.auth.inactive'),
             ], 403);
         }
 
@@ -67,7 +67,7 @@ class AuthController extends Controller
             $token->delete();
         }
 
-        return response()->json(['message' => 'Sesión cerrada correctamente.']);
+        return response()->json(['message' => __('messages.auth.logged_out')]);
     }
 
     public function changePassword(ChangePasswordRequest $request): JsonResponse
@@ -76,7 +76,7 @@ class AuthController extends Controller
 
         if (! Hash::check($request->string('current_password'), $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => 'La contraseña actual no es correcta.',
+                'current_password' => __('messages.auth.current_password_invalid'),
             ]);
         }
 
@@ -90,6 +90,6 @@ class AuthController extends Controller
 
         $this->audit->log('auth.password_changed', 'Cambió su contraseña', $user);
 
-        return response()->json(['message' => 'Contraseña actualizada correctamente.']);
+        return response()->json(['message' => __('messages.auth.password_changed')]);
     }
 }

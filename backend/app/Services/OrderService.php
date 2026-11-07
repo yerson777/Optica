@@ -61,7 +61,7 @@ class OrderService
 
             if ($from === $status) {
                 throw ValidationException::withMessages([
-                    'status' => 'El pedido ya se encuentra en ese estado.',
+                    'status' => __('messages.orders.same_status'),
                 ]);
             }
 
@@ -74,7 +74,10 @@ class OrderService
 
             if (! in_array($status, $allowed[$from] ?? [], true)) {
                 throw ValidationException::withMessages([
-                    'status' => 'No se puede cambiar el pedido de "'.Order::STATUS_LABELS[$from].'" a "'.Order::STATUS_LABELS[$status].'".',
+                    'status' => __('messages.orders.invalid_transition', [
+                        'from' => Order::STATUS_LABELS[$from],
+                        'to' => Order::STATUS_LABELS[$status],
+                    ]),
                 ]);
             }
 

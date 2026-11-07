@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import {
   ORDER_STATUS_LABELS,
   Order,
@@ -15,7 +16,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { OrderService } from '../../../core/services/order.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
-import { formatCurrency, formatPhone } from '../../../core/utils/format';
+import { formatCurrency, formatPhone, formatWhatsAppNumber } from '../../../core/utils/format';
 import { AuthImageComponent } from '../../../shared/ui/auth-image.component';
 import {
   ImageViewerData,
@@ -73,7 +74,7 @@ export class OrderDetailComponent implements OnInit {
       },
       error: (error) => {
         this.loading.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo cargar el pedido.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.orders.loadFallback));
       },
     });
   }
@@ -87,7 +88,7 @@ export class OrderDetailComponent implements OnInit {
   }
 
   statusLabel(status: OrderStatus | null): string {
-    return status ? ORDER_STATUS_LABELS[status] : 'Creado';
+    return status ? ORDER_STATUS_LABELS[status] : MESSAGES.orders.created;
   }
 
   openImage(image: PrescriptionImage, title?: string): void {
@@ -106,9 +107,9 @@ export class OrderDetailComponent implements OnInit {
   async markReady(): Promise<void> {
     await this.changeStatus(
       'ready',
-      'Marcar listo para entregar',
-      'El pedido pasará a la lista de entregas. ¿Deseas continuar?',
-      'Sí, marcar listo',
+      MESSAGES.orders.markReadyTitle,
+      MESSAGES.orders.markReadyMessage,
+      MESSAGES.orders.markReadyConfirm,
       false
     );
   }
@@ -116,9 +117,9 @@ export class OrderDetailComponent implements OnInit {
   async markDelivered(): Promise<void> {
     await this.changeStatus(
       'delivered',
-      'Marcar como entregado',
-      '¿Confirmas que los lentes ya fueron entregados al cliente?\n\nSe guardará la fecha, la hora y el usuario responsable.',
-      'Sí, marcar entregado',
+      MESSAGES.orders.markDeliveredTitle,
+      MESSAGES.orders.markDeliveredMessage,
+      MESSAGES.orders.deliveredConfirm,
       false
     );
   }
@@ -126,9 +127,9 @@ export class OrderDetailComponent implements OnInit {
   async backToPending(): Promise<void> {
     await this.changeStatus(
       'pending',
-      'Volver a pendiente',
-      'El pedido volverá a la lista de pendientes. ¿Deseas continuar?',
-      'Sí, volver a pendiente',
+      MESSAGES.orders.backToPendingTitle,
+      MESSAGES.orders.backToPendingMessage,
+      MESSAGES.orders.backToPendingConfirm,
       false
     );
   }
@@ -136,11 +137,32 @@ export class OrderDetailComponent implements OnInit {
   async cancel(): Promise<void> {
     await this.changeStatus(
       'cancelled',
-      'Cancelar pedido',
-      'El pedido quedará registrado como cancelado y no se borrará del historial.\n\n¿Deseas continuar?',
-      'Sí, cancelar pedido',
+      MESSAGES.orders.cancelTitle,
+      MESSAGES.orders.cancelMessage,
+      MESSAGES.orders.cancelConfirm,
       true
     );
+  }
+
+  sendWhatsApp(order: Order): void {
+    const waPhone = formatWhatsAppNumber(order.client?.phone ?? null);
+
+    if (!waPhone) {
+      this.toast.error('El cliente no tiene un número de celular válido registrado.');
+      return;
+    }
+
+    const name = order.client?.full_name ?? 'cliente';
+    const message = `¡Hola ${name}! \u{1F44B}\u{1F60A}\n¡Tenemos excelentes noticias! \u{1F389} Tus lentes ya están listos \u{1F453}\u2728\nPuedes pasar a recogerlos cuando gustes. ¡Te esperamos con mucho gusto! \u{1F499}`;
+    const encodedText = encodeURIComponent(message);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const url = isMobile
+      ? `https://wa.me/${waPhone}?text=${encodedText}`
+      : `https://web.whatsapp.com/send?phone=${waPhone}&text=${encodedText}`;
+
+    console.log('URL de WhatsApp generada:', url);
+
+    window.open(url, '_blank', 'noopener');
   }
 
   private async changeStatus(
@@ -160,7 +182,7 @@ export class OrderDetailComponent implements OnInit {
       title,
       message,
       confirmText,
-      cancelText: 'Volver',
+      cancelText: MESSAGES.orders.back,
       danger,
     });
 
@@ -174,12 +196,12 @@ export class OrderDetailComponent implements OnInit {
       next: (response) => {
         this.busy.set(false);
         this.order.set(response.data);
-        this.toast.success(response.message || 'Pedido actualizado.');
+        this.toast.success(response.message || MESSAGES.orders.updatedFallback);
         this.notifications.refreshUnreadCount();
       },
       error: (error) => {
         this.busy.set(false);
-        this.toast.error(extractErrorMessage(error, 'No se pudo actualizar el pedido.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.updateFallback));
         this.load();
       },
     });

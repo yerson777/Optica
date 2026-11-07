@@ -18,8 +18,11 @@ class NotificationService
     {
         $order->loadMissing('client');
 
-        $clientName = $order->client?->full_name ?? 'Cliente';
-        $message = "El pedido #{$order->id} de {$clientName} está listo para entregar.";
+        $clientName = $order->client?->full_name ?? __('messages.notifications.client_fallback');
+        $message = __('messages.notifications.ready', [
+            'id' => $order->id,
+            'client' => $clientName,
+        ]);
 
         foreach ($this->activeUsers() as $user) {
             Notification::firstOrCreate(
@@ -52,8 +55,12 @@ class NotificationService
         $created = 0;
 
         foreach ($orders as $order) {
-            $clientName = $order->client?->full_name ?? 'Cliente';
-            $overdueMessage = "El pedido #{$order->id} de {$clientName} lleva más de {$days} días pendiente.";
+            $clientName = $order->client?->full_name ?? __('messages.notifications.client_fallback');
+            $overdueMessage = __('messages.notifications.overdue', [
+                'id' => $order->id,
+                'client' => $clientName,
+                'days' => $days,
+            ]);
 
             foreach ($users as $user) {
                 $notification = Notification::firstOrCreate(
@@ -70,7 +77,10 @@ class NotificationService
                 }
 
                 if ($order->ordered_at->toDateString() <= $staleLimit) {
-                    $staleMessage = "El pedido #{$order->id} de {$clientName} lleva demasiado tiempo sin completarse.";
+                    $staleMessage = __('messages.notifications.stale', [
+                        'id' => $order->id,
+                        'client' => $clientName,
+                    ]);
                     $stale = Notification::firstOrCreate(
                         [
                             'user_id' => $user->id,
@@ -100,8 +110,11 @@ class NotificationService
             ->get();
 
         foreach ($readyOrders as $order) {
-            $clientName = $order->client?->full_name ?? 'Cliente';
-            $message = "El pedido #{$order->id} de {$clientName} está listo hace varios días y aún no se entrega.";
+            $clientName = $order->client?->full_name ?? __('messages.notifications.client_fallback');
+            $message = __('messages.notifications.ready_stale', [
+                'id' => $order->id,
+                'client' => $clientName,
+            ]);
 
             foreach ($users as $user) {
                 $notification = Notification::firstOrCreate(

@@ -3,16 +3,17 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { AppNotification } from '../../core/models';
 import { NotificationService } from '../../core/services/notification.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractErrorMessage } from '../../core/utils/error-message';
-import { PagerComponent } from '../../shared/ui/pager.component';
+import { PaginationComponent } from '../../shared/ui/pagination.component';
 
 @Component({
   selector: 'app-notifications',
-  imports: [CommonModule, RouterModule, MatIconModule, MatProgressBarModule, PagerComponent],
+  imports: [CommonModule, RouterModule, MatIconModule,     MatProgressBarModule, PaginationComponent],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +29,8 @@ export class NotificationsComponent implements OnInit {
   readonly onlyUnread = signal(false);
   readonly page = signal(1);
   readonly lastPage = signal(1);
+  readonly pageSize = signal(10);
+  readonly total = signal(0);
   readonly unreadCount = this.notifications.unreadCount;
   readonly alertDays = signal(5);
   readonly savingSettings = signal(false);
@@ -42,16 +45,17 @@ export class NotificationsComponent implements OnInit {
     this.loading.set(true);
 
     this.notifications
-      .list({ unread: this.onlyUnread(), page: this.page(), per_page: 20 })
+      .list({ unread: this.onlyUnread(), page: this.page(), per_page: this.pageSize() })
       .subscribe({
         next: (response) => {
           this.items.set(response.data);
           this.lastPage.set(response.last_page);
+          this.total.set(response.total);
           this.loading.set(false);
         },
         error: (error) => {
           this.loading.set(false);
-          this.toast.error(extractErrorMessage(error, 'No se pudieron cargar los avisos.'));
+          this.toast.error(extractErrorMessage(error, MESSAGES.notifications.loadFallback));
         },
       });
   }
@@ -81,7 +85,7 @@ export class NotificationsComponent implements OnInit {
         );
       },
       error: (error) => {
-        this.toast.error(extractErrorMessage(error, 'No se pudo marcar el aviso como leído.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.notifications.markReadFallback));
       },
     });
   }
@@ -96,12 +100,12 @@ export class NotificationsComponent implements OnInit {
     this.notifications.markAllRead().subscribe({
       next: () => {
         this.markingAll.set(false);
-        this.toast.success('Todos los avisos se marcaron como leídos.');
+        this.toast.success(MESSAGES.notifications.markAllSuccess);
         this.load();
       },
       error: (error) => {
         this.markingAll.set(false);
-        this.toast.error(extractErrorMessage(error, 'No se pudieron marcar los avisos.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.notifications.markAllFallback));
       },
     });
   }
@@ -123,7 +127,7 @@ export class NotificationsComponent implements OnInit {
     const days = Number(this.alertDays());
 
     if (!Number.isInteger(days) || days < 1 || days > 60) {
-      this.toast.error('El plazo debe ser un número entero entre 1 y 60 días.');
+      this.toast.error(MESSAGES.notifications.invalidDays);
       return;
     }
 
@@ -133,13 +137,19 @@ export class NotificationsComponent implements OnInit {
       next: (response) => {
         this.savingSettings.set(false);
         this.alertDays.set(response.data.pending_alert_days);
-        this.toast.success(response.message || 'Configuración guardada.');
+        this.toast.success(response.message || MESSAGES.notifications.settingsSuccess);
       },
       error: (error) => {
         this.savingSettings.set(false);
-        this.toast.error(extractErrorMessage(error, 'No se pudo guardar la configuración.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.notifications.settingsFallback));
       },
     });
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.page.set(1);
+    this.load();
   }
 
   goToPage(page: number): void {
@@ -154,13 +164,13 @@ export class NotificationsComponent implements OnInit {
   typeLabel(type: string): string {
     switch (type) {
       case 'ready':
-        return 'Listo para entregar';
+        return MESSAGES.notifications.types.ready;
       case 'overdue':
-        return 'Pedido pendiente';
+        return MESSAGES.notifications.types.overdue;
       case 'stale':
-        return 'Requiere atención';
+        return MESSAGES.notifications.types.stale;
       default:
-        return 'Aviso';
+        return MESSAGES.notifications.types.default;
     }
   }
 

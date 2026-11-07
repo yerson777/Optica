@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MESSAGES } from '../i18n/messages.es';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   private readonly snackBar = inject(MatSnackBar);
 
   success(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
+    this.snackBar.open(message, MESSAGES.common.close, {
       duration: 4000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
@@ -15,7 +16,7 @@ export class ToastService {
   }
 
   error(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
+    this.snackBar.open(message, MESSAGES.common.close, {
       duration: 6500,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
@@ -24,7 +25,7 @@ export class ToastService {
   }
 
   info(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
+    this.snackBar.open(message, MESSAGES.common.close, {
       duration: 4000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',

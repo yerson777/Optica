@@ -47,14 +47,17 @@ class StoreOrderRequest extends FormRequest
             $prescription = Prescription::query()->find($this->integer('prescription_id'));
 
             if ($prescription && $prescription->client_id !== $this->integer('client_id')) {
-                $validator->errors()->add('prescription_id', 'La receta seleccionada no pertenece a este cliente.');
+                $validator->errors()->add(
+                    'prescription_id',
+                    __('messages.validation.orders.prescription_not_owned')
+                );
             }
 
             $price = $this->input('price');
             $advance = $this->input('advance');
 
             if ($price !== null && $advance !== null && (float) $advance > (float) $price) {
-                $validator->errors()->add('advance', 'El adelanto no puede ser mayor que el precio total.');
+                $validator->errors()->add('advance', __('messages.validation.orders.advance_gt_price'));
             }
         });
     }
@@ -62,13 +65,13 @@ class StoreOrderRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'client_id.required' => 'Selecciona un cliente.',
-            'prescription_id.required' => 'Selecciona la receta que se usará para el pedido.',
-            'prescription_id.exists' => 'La receta seleccionada no existe.',
-            'lens_type.required' => 'Indica el tipo de lentes.',
-            'price.numeric' => 'El precio debe ser un número.',
-            'advance.numeric' => 'El adelanto debe ser un número.',
-            'ordered_at.before_or_equal' => 'La fecha del pedido no puede ser futura.',
+            'client_id.required' => __('messages.validation.orders.client_required'),
+            'prescription_id.required' => __('messages.validation.orders.prescription_required'),
+            'prescription_id.exists' => __('messages.validation.orders.prescription_exists'),
+            'lens_type.required' => __('messages.validation.orders.lens_type_required'),
+            'price.numeric' => __('messages.validation.orders.price_numeric'),
+            'advance.numeric' => __('messages.validation.orders.advance_numeric'),
+            'ordered_at.before_or_equal' => __('messages.validation.orders.ordered_at_future'),
         ];
     }
 }

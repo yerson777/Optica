@@ -3,18 +3,19 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { Order } from '../../core/models';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { OrderService } from '../../core/services/order.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractErrorMessage } from '../../core/utils/error-message';
-import { formatPhone } from '../../core/utils/format';
-import { PagerComponent } from '../../shared/ui/pager.component';
+import { formatPhone, formatWhatsAppNumber } from '../../core/utils/format';
+import { PaginationComponent } from '../../shared/ui/pagination.component';
 
 @Component({
   selector: 'app-deliveries',
-  imports: [CommonModule, RouterModule, MatIconModule, MatProgressBarModule, PagerComponent],
+  imports: [CommonModule, RouterModule, MatIconModule,     MatProgressBarModule, PaginationComponent],
   templateUrl: './deliveries.component.html',
   styleUrl: './deliveries.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,7 +33,7 @@ export class DeliveriesComponent implements OnInit {
   readonly page = signal(1);
   readonly lastPage = signal(1);
   readonly total = signal(0);
-  readonly pageSize = 12;
+  readonly pageSize = signal(10);
 
   ngOnInit(): void {
     this.load();
@@ -45,7 +46,7 @@ export class DeliveriesComponent implements OnInit {
       .list({
         status: 'ready',
         page: this.page(),
-        per_page: this.pageSize,
+        per_page: this.pageSize(),
       })
       .subscribe({
         next: (response) => {
@@ -62,9 +63,15 @@ export class DeliveriesComponent implements OnInit {
         },
         error: (error) => {
           this.loading.set(false);
-          this.toast.error(extractErrorMessage(error, 'No se pudieron cargar las entregas.'));
+          this.toast.error(extractErrorMessage(error, MESSAGES.deliveries.loadFallback));
         },
       });
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.page.set(1);
+    this.load();
   }
 
   goToPage(page: number): void {
@@ -87,10 +94,13 @@ export class DeliveriesComponent implements OnInit {
 
   async deliver(order: Order): Promise<void> {
     const confirmed = await this.confirm.ask({
-      title: 'Confirmar entrega',
-      message: `¿Confirmas que el pedido #${order.id} de ${order.client?.full_name} fue entregado?\n\nSe guardará la fecha, la hora y tu usuario como responsable.`,
-      confirmText: 'Sí, marcar entregado',
-      cancelText: 'Cancelar',
+      title: MESSAGES.orders.deliveryConfirmTitle,
+      message: MESSAGES.orders.deliveryConfirmMessage(
+        order.id,
+        order.client?.full_name ?? ''
+      ),
+      confirmText: MESSAGES.orders.deliveredConfirm,
+      cancelText: MESSAGES.common.cancel,
     });
 
     if (!confirmed) {
@@ -102,7 +112,7 @@ export class DeliveriesComponent implements OnInit {
     this.orders.updateStatus(order.id, 'delivered').subscribe({
       next: (response) => {
         this.busyId.set(null);
-        this.toast.success(response.message || 'Pedido entregado.');
+        this.toast.success(response.message || MESSAGES.orders.deliveredFallback);
         this.notifications.refreshUnreadCount();
 
         if (this.items().length === 1 && this.page() > 1) {
@@ -113,8 +123,29 @@ export class DeliveriesComponent implements OnInit {
       },
       error: (error) => {
         this.busyId.set(null);
-        this.toast.error(extractErrorMessage(error, 'No se pudo marcar como entregado.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.markDeliveredFallback));
       },
     });
+  }
+
+  sendWhatsApp(order: Order): void {
+    const waPhone = formatWhatsAppNumber(order.client?.phone ?? null);
+
+    if (!waPhone) {
+      this.toast.error('El cliente no tiene un número de celular válido registrado.');
+      return;
+    }
+
+    const name = order.client?.full_name ?? 'cliente';
+    const message = `¡Hola ${name}! \u{1F44B}\u{1F60A}\n¡Tenemos excelentes noticias! \u{1F389} Tus lentes ya están listos \u{1F453}\u2728\nPuedes pasar a recogerlos cuando gustes. ¡Te esperamos con mucho gusto! \u{1F499}`;
+    const encodedText = encodeURIComponent(message);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const url = isMobile
+      ? `https://wa.me/${waPhone}?text=${encodedText}`
+      : `https://web.whatsapp.com/send?phone=${waPhone}&text=${encodedText}`;
+
+    console.log('URL de WhatsApp generada:', url);
+
+    window.open(url, '_blank', 'noopener');
   }
 }

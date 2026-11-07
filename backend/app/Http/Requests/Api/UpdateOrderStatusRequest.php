@@ -24,8 +24,8 @@ class UpdateOrderStatusRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.required' => 'Selecciona el nuevo estado del pedido.',
-            'status.in' => 'El estado seleccionado no es válido.',
+            'status.required' => __('messages.validation.orders.status_required'),
+            'status.in' => __('messages.validation.orders.status_invalid'),
         ];
     }
 }

@@ -58,7 +58,7 @@ class UserController extends Controller
                 'is_active' => $user->is_active,
                 'created_at' => $user->created_at,
             ],
-            'message' => 'Usuario creado correctamente. Ya puede iniciar sesión.',
+            'message' => __('messages.users.created'),
         ], 201);
     }
 }

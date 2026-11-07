@@ -1,0 +1,166 @@
+export const MESSAGES = {
+  common: {
+    unexpected: 'Ocurrió un error inesperado. Inténtalo nuevamente.',
+    network:
+      'No se pudo conectar con el servidor. Verifica tu conexión a internet e inténtalo nuevamente.',
+    timeout: 'La solicitud tardó demasiado. Verifica tu conexión e inténtalo nuevamente.',
+    server:
+      'Ocurrió un error interno en el servidor. Inténtalo nuevamente en unos minutos. Si el problema persiste, contacta al administrador.',
+    forbidden: 'No tienes permiso para realizar esta acción.',
+    notFound: 'No se encontró la información solicitada.',
+    tooManyRequests: 'Demasiados intentos. Espera un momento y vuelve a intentarlo.',
+    sessionExpired: 'Tu sesión venció o no has iniciado sesión. Ingresa nuevamente para continuar.',
+    close: 'Cerrar',
+    cancel: 'Cancelar',
+    accept: 'Aceptar',
+    retry: 'Reintentar',
+    checking: 'Comprobando…',
+    noPhone: 'Sin celular',
+    emptyValue: '—',
+  },
+  auth: {
+    loginFallback: 'No se pudo iniciar sesión. Verifica tus datos e inténtalo nuevamente.',
+    changePasswordSuccess: 'Contraseña actualizada correctamente.',
+    changePasswordFallback: 'No se pudo cambiar la contraseña. Inténtalo nuevamente.',
+  },
+  connectivity: {
+    offlineTitle: 'Sin conexión a internet',
+    offlineMessage: 'Revisa tu conexión e inténtalo nuevamente.',
+    serverTitle: 'No se pudo conectar con el servidor',
+    serverMessage:
+      'Verifica que el equipo o servidor esté encendido y conectado a la red. Si el problema persiste, contacta al administrador.',
+    hint: 'Los cambios se guardan en el servidor. Vuelve a intentarlo cuando recuperes la conexión.',
+  },
+  clients: {
+    loadListFallback: 'No se pudo cargar la lista de clientes. Inténtalo nuevamente.',
+    loadFallback: 'No se pudo cargar el cliente. Inténtalo nuevamente.',
+    loadDetailFallback: 'No se pudo cargar la ficha del cliente. Inténtalo nuevamente.',
+    createSuccess: 'El cliente se registró correctamente.',
+    updateSuccess: 'Los datos del cliente se actualizaron correctamente.',
+    saveFallback: 'No se pudo guardar el cliente. Inténtalo nuevamente.',
+    duplicateTitle: 'Posible cliente repetido',
+    duplicateIntro: 'Ya existe un cliente con un nombre o celular parecido:',
+    duplicateOutro: 'Si estás seguro de que es una persona diferente, puedes continuar.',
+    duplicateConfirm: 'Sí, registrar de todas formas',
+    duplicateReview: 'Revisar datos',
+    prescriptionRequired: 'Primero registra una receta para poder crear el pedido.',
+  },
+  orders: {
+    loadListFallback: 'No se pudieron cargar los pedidos. Inténtalo nuevamente.',
+    loadFallback: 'No se pudo cargar el pedido. Inténtalo nuevamente.',
+    updateFallback: 'No se pudo actualizar el pedido. Inténtalo nuevamente.',
+    readyFallback: 'El pedido está listo para entregar.',
+    deliveredFallback: 'El pedido se marcó como entregado.',
+    deliveredTitle: 'Marcar como entregado',
+    deliveredMessage: (id: number, client: string) =>
+      `¿Confirmas que el pedido #${id} de ${client} fue entregado?\n\nSe guardará la fecha, la hora y el usuario responsable.`,
+    deliveredConfirm: 'Sí, marcar entregado',
+    selectClientFirst: 'Selecciona primero un cliente para crear su pedido.',
+    noPrescription:
+      'Este cliente todavía no tiene una receta. Registra una antes de crear el pedido.',
+    advanceExceedsPrice: 'El adelanto no puede ser mayor que el precio total.',
+    createSuccess: (id: number) => `Pedido #${id} registrado correctamente.`,
+    createFallback: 'No se pudo registrar el pedido. Inténtalo nuevamente.',
+    created: 'Creado',
+    markReadyTitle: 'Marcar listo para entregar',
+    markReadyMessage: 'El pedido pasará a la lista de entregas. ¿Deseas continuar?',
+    markReadyConfirm: 'Sí, marcar listo',
+    markDeliveredTitle: 'Marcar como entregado',
+    markDeliveredMessage:
+      '¿Confirmas que los lentes ya fueron entregados al cliente?\n\nSe guardará la fecha, la hora y el usuario responsable.',
+    backToPendingTitle: 'Volver a pendiente',
+    backToPendingMessage: 'El pedido volverá a la lista de pendientes. ¿Deseas continuar?',
+    backToPendingConfirm: 'Sí, volver a pendiente',
+    cancelTitle: 'Cancelar pedido',
+    cancelMessage:
+      'El pedido quedará registrado como cancelado y no se borrará del historial.\n\n¿Deseas continuar?',
+    cancelConfirm: 'Sí, cancelar pedido',
+    back: 'Volver',
+    updatedFallback: 'Pedido actualizado correctamente.',
+    deliveryConfirmTitle: 'Confirmar entrega',
+    deliveryConfirmMessage: (id: number, client: string) =>
+      `¿Confirmas que el pedido #${id} de ${client} fue entregado?\n\nSe guardará la fecha, la hora y tu usuario como responsable.`,
+    markDeliveredFallback: 'No se pudo marcar como entregado. Inténtalo nuevamente.',
+  },
+  prescriptions: {
+    loadClientFallback: 'No se pudo cargar el cliente. Inténtalo nuevamente.',
+    browserCameraUnavailable:
+      'Tu navegador no permite abrir la cámara directamente. Usa el selector de fotos.',
+    maxPhotos: (max: number) =>
+      `Puedes agregar como máximo ${max} fotografías por receta.`,
+    invalidFormat: (name: string) =>
+      `"${name}" no es un formato permitido. Usa JPG, PNG o WEBP.`,
+    tooLarge: (name: string) => `"${name}" pesa más de 10 MB. Intenta con otra foto.`,
+    clientLoading: 'Estamos cargando los datos del cliente. Inténtalo nuevamente en un momento.',
+    photoRequired: 'Agrega al menos una fotografía de la receta.',
+    saveSuccess: 'La receta se guardó correctamente.',
+    saveFallback: 'No se pudo guardar la receta. Inténtalo nuevamente.',
+  },
+  users: {
+    loadFallback: 'No se pudieron cargar los usuarios. Inténtalo nuevamente.',
+    createSuccess: 'Usuario creado correctamente.',
+    createFallback: 'No se pudo crear el usuario. Inténtalo nuevamente.',
+  },
+  notifications: {
+    loadFallback: 'No se pudieron cargar los avisos. Inténtalo nuevamente.',
+    markReadFallback: 'No se pudo marcar el aviso como leído. Inténtalo nuevamente.',
+    markAllSuccess: 'Todos los avisos se marcaron como leídos.',
+    markAllFallback: 'No se pudieron marcar los avisos. Inténtalo nuevamente.',
+    invalidDays: 'El plazo debe ser un número entero entre 1 y 60 días.',
+    settingsSuccess: 'Configuración guardada correctamente.',
+    settingsFallback: 'No se pudo guardar la configuración. Inténtalo nuevamente.',
+    types: {
+      ready: 'Listo para entregar',
+      overdue: 'Pedido pendiente',
+      stale: 'Requiere atención',
+      default: 'Aviso',
+    },
+  },
+  dashboard: {
+    loadFallback: 'No se pudo cargar el panel de inicio. Inténtalo nuevamente.',
+  },
+  deliveries: {
+    loadFallback: 'No se pudieron cargar las entregas. Inténtalo nuevamente.',
+  },
+  history: {
+    loadFallback: 'No se pudo cargar el historial. Inténtalo nuevamente.',
+  },
+  layout: {
+    installAccepted: 'Aplicación instalada correctamente.',
+    installDismissed: 'Puedes instalarla cuando quieras desde el menú del navegador.',
+    installInstructions:
+      'Para instalar: abre el menú del navegador y elige “Instalar aplicación” o “Agregar a pantalla de inicio”.',
+  },
+  camera: {
+    title: 'Tomar foto de la receta',
+    instruction: 'Ubica la receta completa dentro del marco y pulsa “Capturar foto”.',
+    opening: 'Abriendo cámara…',
+    switchCamera: 'Cambiar cámara',
+    capture: 'Capturar foto',
+    capturing: 'Capturando…',
+    hint: 'Si la cámara no funciona, usa “Elegir de galería” en la pantalla anterior.',
+    notReady: 'La cámara aún no está lista. Espera un momento e inténtalo otra vez.',
+    processError: 'No se pudo procesar la fotografía. Inténtalo nuevamente.',
+    generateError: 'No se pudo generar la fotografía. Inténtalo nuevamente.',
+    unsupported:
+      'Este navegador no permite abrir la cámara directamente. Usa “Elegir de galería” o accede mediante HTTPS.',
+    permissionDenied:
+      'El permiso de la cámara fue denegado. Habilítalo en el navegador o usa “Elegir de galería”.',
+    notFound: 'No se encontró una cámara en este dispositivo. Usa “Elegir de galería”.',
+    inUse:
+      'La cámara está siendo usada por otra aplicación. Ciérrala e inténtalo nuevamente.',
+    openError:
+      'No se pudo abrir la cámara. Revisa los permisos del navegador o usa “Elegir de galería”.',
+  },
+  imageViewer: {
+    defaultTitle: 'Fotografía de receta',
+    download: 'Descargar',
+    zoomIn: 'Toca la imagen para ampliarla',
+    zoomOut: 'Toca la imagen para verla completa',
+  },
+  pager: {
+    previous: 'Anterior',
+    next: 'Siguiente',
+    info: (page: number, lastPage: number) => `Página ${page} de ${lastPage}`,
+  },
+} as const;

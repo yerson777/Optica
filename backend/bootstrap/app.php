@@ -7,6 +7,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\ThrottleRequestsException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -33,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Tu sesión venció o no has iniciado sesión.',
+                    'message' => __('messages.auth.session_expired'),
                 ], 401);
             }
         });
@@ -41,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Demasiados intentos. Espera un momento y vuelve a intentarlo.',
+                    'message' => __('messages.auth.throttled'),
                 ], 429);
             }
         });
@@ -49,8 +51,32 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'No se encontró el recurso solicitado.',
+                    'message' => __('messages.errors.not_found'),
                 ], 404);
             }
+        });
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
+                return null;
+            }
+
+            if ($e instanceof HttpExceptionInterface) {
+                if ($e->getStatusCode() >= 500) {
+                    return response()->json([
+                        'message' => __('messages.errors.server'),
+                    ], $e->getStatusCode());
+                }
+
+                return null;
+            }
+
+            return response()->json([
+                'message' => __('messages.errors.server'),
+            ], 500);
         });
     })->create();

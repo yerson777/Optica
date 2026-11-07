@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Order, OrderStatus } from '../../../core/models';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -19,7 +20,7 @@ import { OrderService } from '../../../core/services/order.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
 import { formatCurrency, formatPhone } from '../../../core/utils/format';
-import { PagerComponent } from '../../../shared/ui/pager.component';
+import { PaginationComponent } from '../../../shared/ui/pagination.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 
 @Component({
@@ -30,7 +31,7 @@ import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
     MatIconModule,
     MatProgressBarModule,
     StatusChipComponent,
-    PagerComponent,
+    PaginationComponent,
   ],
   templateUrl: './order-list.component.html',
   styleUrl: './order-list.component.scss',
@@ -55,7 +56,7 @@ export class OrderListComponent implements OnInit {
   readonly dateFrom = signal('');
   readonly dateTo = signal('');
   readonly busyId = signal<number | null>(null);
-  readonly pageSize = 15;
+  readonly pageSize = signal(10);
 
   private readonly searchSubject = new Subject<string>();
 
@@ -93,7 +94,7 @@ export class OrderListComponent implements OnInit {
         from: this.dateFrom(),
         to: this.dateTo(),
         page: this.page(),
-        per_page: this.pageSize,
+        per_page: this.pageSize(),
       })
       .subscribe({
         next: (response) => {
@@ -104,7 +105,7 @@ export class OrderListComponent implements OnInit {
         },
         error: (error) => {
           this.loading.set(false);
-          this.toast.error(extractErrorMessage(error, 'No se pudieron cargar los pedidos.'));
+          this.toast.error(extractErrorMessage(error, MESSAGES.orders.loadListFallback));
         },
       });
   }
@@ -142,6 +143,12 @@ export class OrderListComponent implements OnInit {
     this.load();
   }
 
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.page.set(1);
+    this.load();
+  }
+
   goToPage(page: number): void {
     if (page < 1 || page > this.lastPage() || page === this.page()) {
       return;
@@ -162,23 +169,26 @@ export class OrderListComponent implements OnInit {
     this.orders.updateStatus(order.id, 'ready').subscribe({
       next: (response) => {
         this.busyId.set(null);
-        this.toast.success(response.message || 'El pedido está listo para entregar.');
+        this.toast.success(response.message || MESSAGES.orders.readyFallback);
         this.notifications.refreshUnreadCount();
         this.load();
       },
       error: (error) => {
         this.busyId.set(null);
-        this.toast.error(extractErrorMessage(error, 'No se pudo actualizar el pedido.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.updateFallback));
       },
     });
   }
 
   async markDelivered(order: Order): Promise<void> {
     const confirmed = await this.confirm.ask({
-      title: 'Marcar como entregado',
-      message: `¿Confirmas que el pedido #${order.id} de ${order.client?.full_name} fue entregado?\n\nSe guardará la fecha, la hora y el usuario responsable.`,
-      confirmText: 'Sí, marcar entregado',
-      cancelText: 'Cancelar',
+      title: MESSAGES.orders.deliveredTitle,
+      message: MESSAGES.orders.deliveredMessage(
+        order.id,
+        order.client?.full_name ?? ''
+      ),
+      confirmText: MESSAGES.orders.deliveredConfirm,
+      cancelText: MESSAGES.common.cancel,
     });
 
     if (!confirmed) {
@@ -190,13 +200,13 @@ export class OrderListComponent implements OnInit {
     this.orders.updateStatus(order.id, 'delivered').subscribe({
       next: (response) => {
         this.busyId.set(null);
-        this.toast.success(response.message || 'Pedido entregado.');
+        this.toast.success(response.message || MESSAGES.orders.deliveredFallback);
         this.notifications.refreshUnreadCount();
         this.load();
       },
       error: (error) => {
         this.busyId.set(null);
-        this.toast.error(extractErrorMessage(error, 'No se pudo marcar como entregado.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.markDeliveredFallback));
       },
     });
   }

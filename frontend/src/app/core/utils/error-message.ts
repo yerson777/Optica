@@ -1,9 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { MESSAGES } from '../i18n/messages.es';
 
-export function extractErrorMessage(error: unknown, fallback = 'Ocurrió un error inesperado.'): string {
+export function extractErrorMessage(error: unknown, fallback: string = MESSAGES.common.unexpected): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
-      return 'No se pudo conectar con el servidor. Verifica tu conexión e inténtalo nuevamente.';
+      return MESSAGES.common.network;
+    }
+
+    if (error.status === 408 || error.status === 504) {
+      return MESSAGES.common.timeout;
+    }
+
+    if (error.status >= 500) {
+      return MESSAGES.common.server;
     }
 
     const errors = error.error?.errors;
@@ -20,16 +29,29 @@ export function extractErrorMessage(error: unknown, fallback = 'Ocurrió un erro
       }
     }
 
-    if (typeof error.error?.message === 'string' && error.error.message.trim() !== '') {
-      return error.error.message;
+    const serverMessage =
+      typeof error.error?.message === 'string' && error.error.message.trim() !== ''
+        ? error.error.message
+        : null;
+
+    if (serverMessage) {
+      return serverMessage;
+    }
+
+    if (error.status === 401) {
+      return MESSAGES.common.sessionExpired;
     }
 
     if (error.status === 403) {
-      return 'No tienes permiso para realizar esta acción.';
+      return MESSAGES.common.forbidden;
     }
 
     if (error.status === 404) {
-      return 'No se encontró la información solicitada.';
+      return MESSAGES.common.notFound;
+    }
+
+    if (error.status === 429) {
+      return MESSAGES.common.tooManyRequests;
     }
   }
 

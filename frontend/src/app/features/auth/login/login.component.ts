@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { AuthService } from '../../../core/services/auth.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
 import { trimmedRequired } from '../../../core/validators/field-validators';
@@ -56,7 +57,7 @@ export class LoginComponent {
       },
       error: (error) => {
         this.loading.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo iniciar sesión.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.auth.loginFallback));
       },
     });
   }

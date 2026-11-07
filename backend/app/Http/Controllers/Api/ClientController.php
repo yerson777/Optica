@@ -47,7 +47,7 @@ class ClientController extends Controller
 
         if ($duplicates->isNotEmpty() && ! $request->boolean('confirm_duplicate')) {
             return response()->json([
-                'message' => 'Encontramos clientes con un nombre o celular parecido.',
+                'message' => __('messages.clients.duplicates'),
                 'duplicates' => $duplicates,
             ], 409);
         }

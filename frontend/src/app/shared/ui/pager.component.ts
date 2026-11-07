@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MESSAGES } from '../../core/i18n/messages.es';
 
 @Component({
   selector: 'app-pager',
@@ -15,16 +16,16 @@ import { MatIconModule } from '@angular/material/icon';
           (click)="go(page() - 1)"
         >
           <mat-icon>chevron_left</mat-icon>
-          Anterior
+          {{ messages.pager.previous }}
         </button>
-        <span class="pager__info">Página {{ page() }} de {{ lastPage() }}</span>
+        <span class="pager__info">{{ messages.pager.info(page(), lastPage()) }}</span>
         <button
           type="button"
           class="btn btn--outline btn--sm"
           [disabled]="page() >= lastPage()"
           (click)="go(page() + 1)"
         >
-          Siguiente
+          {{ messages.pager.next }}
           <mat-icon>chevron_right</mat-icon>
         </button>
       </nav>
@@ -56,6 +57,7 @@ import { MatIconModule } from '@angular/material/icon';
   ],
 })
 export class PagerComponent {
+  readonly messages = MESSAGES;
   readonly page = input.required<number>();
   readonly lastPage = input.required<number>();
   readonly pageChange = output<number>();

@@ -22,9 +22,9 @@ class StorePrescriptionImageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'images.required' => 'Selecciona al menos una fotografía.',
-            'images.*.mimes' => 'Cada fotografía debe ser JPG, JPEG, PNG o WEBP.',
-            'images.*.max' => 'Cada fotografía debe pesar como máximo 10 MB.',
+            'images.required' => __('messages.validation.prescriptions.images_select_required'),
+            'images.*.mimes' => __('messages.validation.prescriptions.image_mimes'),
+            'images.*.max' => __('messages.validation.prescriptions.image_max_size'),
         ];
     }
 }

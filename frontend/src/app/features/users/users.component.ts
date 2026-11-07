@@ -18,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { User } from '../../core/models';
 import { ToastService } from '../../core/services/toast.service';
 import { UserService } from '../../core/services/user.service';
@@ -90,7 +91,7 @@ export class UsersComponent implements OnInit {
       },
       error: (error) => {
         this.loading.set(false);
-        this.toast.error(extractErrorMessage(error, 'No se pudieron cargar los usuarios.'));
+        this.toast.error(extractErrorMessage(error, MESSAGES.users.loadFallback));
       },
     });
   }
@@ -123,14 +124,14 @@ export class UsersComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.saving.set(false);
-          this.toast.success(response.message || 'Usuario creado correctamente.');
+          this.toast.success(response.message || MESSAGES.users.createSuccess);
           this.clearForm();
           this.page.set(1);
           this.loadUsers();
         },
         error: (error) => {
           this.saving.set(false);
-          this.error.set(extractErrorMessage(error, 'No se pudo crear el usuario.'));
+          this.error.set(extractErrorMessage(error, MESSAGES.users.createFallback));
         },
       });
   }

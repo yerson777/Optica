@@ -11,6 +11,7 @@ import {
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MESSAGES } from '../../core/i18n/messages.es';
 
 type FacingMode = 'environment' | 'user';
 
@@ -22,10 +23,8 @@ type FacingMode = 'environment' | 'user';
     <div class="camera">
       <div class="camera__head">
         <div>
-          <h2>Tomar foto de la receta</h2>
-          <p class="muted small">
-            Ubica la receta completa dentro del marco y pulsa “Capturar foto”.
-          </p>
+          <h2>{{ messages.camera.title }}</h2>
+          <p class="muted small">{{ messages.camera.instruction }}</p>
         </div>
         <button type="button" class="btn btn--ghost btn--sm" (click)="close()" aria-label="Cerrar">
           <mat-icon>close</mat-icon>
@@ -45,7 +44,7 @@ type FacingMode = 'environment' | 'user';
         @if (starting()) {
           <div class="camera__overlay">
             <mat-progress-bar mode="indeterminate" />
-            <p>Abriendo cámara…</p>
+            <p>{{ messages.camera.opening }}</p>
           </div>
         } @else if (!error()) {
           <div class="camera__frame" aria-hidden="true"></div>
@@ -54,13 +53,13 @@ type FacingMode = 'environment' | 'user';
 
       <div class="camera__actions">
         <button type="button" class="btn btn--outline" (click)="close()">
-          Cancelar
+          {{ messages.common.cancel }}
         </button>
 
         @if (canSwitch() && !error()) {
           <button type="button" class="btn btn--soft" (click)="switchCamera()">
             <mat-icon>cameraswitch</mat-icon>
-            Cambiar cámara
+            {{ messages.camera.switchCamera }}
           </button>
         }
 
@@ -71,13 +70,11 @@ type FacingMode = 'environment' | 'user';
           (click)="capture()"
         >
           <mat-icon>photo_camera</mat-icon>
-          {{ capturing() ? 'Capturando…' : 'Capturar foto' }}
+          {{ capturing() ? messages.camera.capturing : messages.camera.capture }}
         </button>
       </div>
 
-      <p class="camera__hint small muted">
-        Si la cámara no funciona, usa “Elegir de galería” en la pantalla anterior.
-      </p>
+      <p class="camera__hint small muted">{{ messages.camera.hint }}</p>
     </div>
   `,
   styles: [
@@ -170,6 +167,8 @@ type FacingMode = 'environment' | 'user';
 export class CameraDialogComponent implements AfterViewInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<CameraDialogComponent, File | null>);
 
+  readonly messages = MESSAGES;
+
   @ViewChild('video') private videoRef?: ElementRef<HTMLVideoElement>;
 
   private stream: MediaStream | null = null;
@@ -213,7 +212,7 @@ export class CameraDialogComponent implements AfterViewInit, OnDestroy {
     const video = this.videoRef?.nativeElement;
 
     if (!video || !video.videoWidth || !video.videoHeight) {
-      this.error.set('La cámara aún no está lista. Espera un momento e inténtalo otra vez.');
+      this.error.set(MESSAGES.camera.notReady);
       return;
     }
 
@@ -227,7 +226,7 @@ export class CameraDialogComponent implements AfterViewInit, OnDestroy {
 
     if (!context) {
       this.capturing.set(false);
-      this.error.set('No se pudo procesar la fotografía. Inténtalo nuevamente.');
+      this.error.set(MESSAGES.camera.processError);
       return;
     }
 
@@ -238,7 +237,7 @@ export class CameraDialogComponent implements AfterViewInit, OnDestroy {
         this.capturing.set(false);
 
         if (!blob) {
-          this.error.set('No se pudo generar la fotografía. Inténtalo nuevamente.');
+          this.error.set(MESSAGES.camera.generateError);
           return;
         }
 
@@ -262,9 +261,7 @@ export class CameraDialogComponent implements AfterViewInit, OnDestroy {
 
     if (!navigator.mediaDevices?.getUserMedia) {
       this.starting.set(false);
-      this.error.set(
-        'Este navegador no permite abrir la cámara directamente. Usa “Elegir de galería” o accede mediante HTTPS.'
-      );
+      this.error.set(MESSAGES.camera.unsupported);
       return;
     }
 
@@ -333,15 +330,15 @@ export class CameraDialogComponent implements AfterViewInit, OnDestroy {
     switch (name) {
       case 'NotAllowedError':
       case 'SecurityError':
-        return 'El permiso de la cámara fue denegado. Habilítalo en el navegador o usa “Elegir de galería”.';
+        return MESSAGES.camera.permissionDenied;
       case 'NotFoundError':
       case 'DevicesNotFoundError':
-        return 'No se encontró una cámara en este dispositivo. Usa “Elegir de galería”.';
+        return MESSAGES.camera.notFound;
       case 'NotReadableError':
       case 'TrackStartError':
-        return 'La cámara está siendo usada por otra aplicación. Ciérrala e inténtalo nuevamente.';
+        return MESSAGES.camera.inUse;
       default:
-        return 'No se pudo abrir la cámara. Revisa los permisos del navegador o usa “Elegir de galería”.';
+        return MESSAGES.camera.openError;
     }
   }
 }

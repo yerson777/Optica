@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { PrescriptionImage } from '../../core/models';
 import { ImageService } from '../../core/services/image.service';
 import { AuthImageComponent } from './auth-image.component';
@@ -18,13 +19,13 @@ export interface ImageViewerData {
     <div class="viewer">
       <div class="viewer__head">
         <div>
-          <h2>{{ data.title || 'Fotografía de receta' }}</h2>
+          <h2>{{ data.title || messages.imageViewer.defaultTitle }}</h2>
           <p class="small">{{ data.image.original_name }}</p>
         </div>
         <div class="viewer__actions">
           <button type="button" class="btn btn--outline btn--sm" (click)="download()">
             <mat-icon>download</mat-icon>
-            Descargar
+            {{ messages.imageViewer.download }}
           </button>
           <button type="button" class="btn btn--ghost btn--sm" (click)="close()" aria-label="Cerrar">
             <mat-icon>close</mat-icon>
@@ -39,7 +40,7 @@ export interface ImageViewerData {
         <app-auth-image [image]="data.image" [alt]="data.image.original_name" />
       </div>
       <p class="viewer__hint small">
-        {{ zoomed() ? 'Toca la imagen para verla completa' : 'Toca la imagen para ampliarla' }}
+        {{ zoomed() ? messages.imageViewer.zoomOut : messages.imageViewer.zoomIn }}
       </p>
     </div>
   `,
@@ -101,6 +102,7 @@ export interface ImageViewerData {
 })
 export class ImageViewerDialogComponent {
   readonly data = inject<ImageViewerData>(MAT_DIALOG_DATA);
+  readonly messages = MESSAGES;
   private readonly dialogRef = inject(MatDialogRef<ImageViewerDialogComponent>);
   private readonly images = inject(ImageService);
 

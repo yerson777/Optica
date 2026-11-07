@@ -80,7 +80,7 @@ class OrderController extends Controller
 
         return response()->json([
             'data' => $order,
-            'message' => 'El pedido se actualizó a "'.$order->status_label.'".',
+            'message' => __('messages.orders.status_updated', ['status' => $order->status_label]),
         ]);
     }
 }

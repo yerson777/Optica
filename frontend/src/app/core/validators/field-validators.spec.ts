@@ -22,12 +22,11 @@ describe('field validators', () => {
     expect(trimmedRequired(new FormControl('María'))).toBeNull();
   });
 
-  it('requires between 6 and 15 phone digits', () => {
+  it('requires exactly 8 phone digits', () => {
     expect(phoneNumberValidator(new FormControl('123'))).toEqual({ phone: true });
-    expect(phoneNumberValidator(new FormControl('+591 700 12345'))).toBeNull();
-    expect(phoneNumberValidator(new FormControl('1234567890123456'))).toEqual({
-      phone: true,
-    });
+    expect(phoneNumberValidator(new FormControl('+591 700 12345'))).toEqual({ phone: true });
+    expect(phoneNumberValidator(new FormControl('12345678'))).toBeNull();
+    expect(phoneNumberValidator(new FormControl('123456789'))).toEqual({ phone: true });
   });
 
   it('rejects future dates only', () => {

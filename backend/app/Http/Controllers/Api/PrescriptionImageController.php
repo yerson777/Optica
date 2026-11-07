@@ -14,7 +14,7 @@ class PrescriptionImageController extends Controller
     {
         $disk = Storage::disk('local');
 
-        abort_unless($disk->exists($prescriptionImage->file_path), 404, 'La fotografía no está disponible.');
+        abort_unless($disk->exists($prescriptionImage->file_path), 404, __('messages.errors.image_unavailable'));
 
         return response()->file($disk->path($prescriptionImage->file_path), [
             'Content-Type' => $prescriptionImage->mime_type,
@@ -28,7 +28,7 @@ class PrescriptionImageController extends Controller
     {
         $disk = Storage::disk('local');
 
-        abort_unless($disk->exists($prescriptionImage->file_path), 404, 'La fotografía no está disponible.');
+        abort_unless($disk->exists($prescriptionImage->file_path), 404, __('messages.errors.image_unavailable'));
 
         return response()->download(
             $disk->path($prescriptionImage->file_path),

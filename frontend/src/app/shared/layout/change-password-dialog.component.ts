@@ -4,6 +4,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractErrorMessage } from '../../core/utils/error-message';
@@ -131,12 +132,12 @@ export class ChangePasswordDialogComponent {
     this.auth.changePassword(this.form.getRawValue()).subscribe({
       next: (response) => {
         this.saving.set(false);
-        this.toast.success(response.message || 'Contraseña actualizada.');
+        this.toast.success(response.message || MESSAGES.auth.changePasswordSuccess);
         this.dialogRef.close(true);
       },
       error: (error) => {
         this.saving.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo cambiar la contraseña.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.auth.changePasswordFallback));
       },
     });
   }

@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { ClientService } from '../../../core/services/client.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -60,7 +62,7 @@ export class ClientFormComponent implements OnInit {
       [
         Validators.required,
         Validators.maxLength(30),
-        Validators.pattern(/^\+?[\d\s()-]{6,20}$/),
+        Validators.pattern(/^\+?[\d\s()-]{8,20}$/),
         phoneNumberValidator,
       ],
     ],
@@ -95,7 +97,7 @@ export class ClientFormComponent implements OnInit {
       },
       error: (error) => {
         this.loading.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo cargar el cliente.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.clients.loadFallback));
       },
     });
   }
@@ -106,13 +108,30 @@ export class ClientFormComponent implements OnInit {
       return;
     }
 
+    const value = this.form.getRawValue();
+    const fullName = value.full_name.trim();
+    const phone = value.phone.trim();
+
+    if (!this.isEdit && !confirmDuplicate) {
+      const response = await firstValueFrom(this.clients.duplicates(fullName, phone));
+
+      const duplicates = (response.data ?? []) as Array<{
+        full_name: string;
+        phone: string;
+      }>;
+
+      if (duplicates.length > 0) {
+        this.error.set('Ya existe un cliente con ese nombre o número de celular.');
+        return;
+      }
+    }
+
     this.saving.set(true);
     this.error.set(null);
 
-    const value = this.form.getRawValue();
     const payload = {
-      full_name: value.full_name.trim(),
-      phone: value.phone.trim(),
+      full_name: fullName,
+      phone: phone,
       observations: value.observations.trim() || null,
       confirm_duplicate: confirmDuplicate,
     };
@@ -125,7 +144,7 @@ export class ClientFormComponent implements OnInit {
       next: (response) => {
         this.saving.set(false);
         this.toast.success(
-          this.isEdit ? 'Los datos del cliente se actualizaron.' : 'El cliente se registró correctamente.'
+          this.isEdit ? MESSAGES.clients.updateSuccess : MESSAGES.clients.createSuccess
         );
         this.router.navigate(['/clientes', response.data.id]);
       },
@@ -143,13 +162,15 @@ export class ClientFormComponent implements OnInit {
             .join('\n');
 
           const proceed = await this.confirm.ask({
-            title: 'Posible cliente repetido',
+            title: MESSAGES.clients.duplicateTitle,
             message:
-              'Ya existe un cliente con un nombre o celular parecido:\n\n' +
+              MESSAGES.clients.duplicateIntro +
+              '\n\n' +
               list +
-              '\n\nSi estás seguro de que es una persona diferente, puedes continuar.',
-            confirmText: 'Sí, registrar de todas formas',
-            cancelText: 'Revisar datos',
+              '\n\n' +
+              MESSAGES.clients.duplicateOutro,
+            confirmText: MESSAGES.clients.duplicateConfirm,
+            cancelText: MESSAGES.clients.duplicateReview,
           });
 
           if (proceed) {
@@ -159,7 +180,7 @@ export class ClientFormComponent implements OnInit {
           return;
         }
 
-        this.error.set(extractErrorMessage(error, 'No se pudo guardar el cliente.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.clients.saveFallback));
       },
     });
   }

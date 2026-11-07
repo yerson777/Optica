@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Client } from '../../../core/models';
 import { ClientService } from '../../../core/services/client.service';
 import { PrescriptionService } from '../../../core/services/prescription.service';
@@ -85,7 +86,7 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.loading.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo cargar el cliente.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.clients.loadFallback));
       },
     });
   }
@@ -102,9 +103,7 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
 
   openCamera(fallbackInput: HTMLInputElement): void {
     if (!navigator.mediaDevices?.getUserMedia) {
-      this.toast.info(
-        'Tu navegador no permite abrir la cámara directamente. Usa el selector de fotos.'
-      );
+      this.toast.info(MESSAGES.prescriptions.browserCameraUnavailable);
       fallbackInput.click();
       return;
     }
@@ -140,7 +139,7 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     const current = this.photos();
 
     if (current.length + files.length > MAX_PHOTOS) {
-      this.toast.error(`Puedes agregar como máximo ${MAX_PHOTOS} fotografías por receta.`);
+      this.toast.error(MESSAGES.prescriptions.maxPhotos(MAX_PHOTOS));
       return;
     }
 
@@ -148,14 +147,12 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
 
     for (const file of files) {
       if (!ALLOWED_TYPES.includes(file.type)) {
-        this.toast.error(
-          `"${file.name}" no es un formato permitido. Usa JPG, PNG o WEBP.`
-        );
+        this.toast.error(MESSAGES.prescriptions.invalidFormat(file.name));
         continue;
       }
 
       if (file.size > MAX_SIZE) {
-        this.toast.error(`"${file.name}" pesa más de 10 MB. Intenta con otra foto.`);
+        this.toast.error(MESSAGES.prescriptions.tooLarge(file.name));
         continue;
       }
 
@@ -188,7 +185,7 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     const client = this.client();
 
     if (!client) {
-      this.error.set('Estamos cargando los datos del cliente. Inténtalo nuevamente en un momento.');
+      this.error.set(MESSAGES.prescriptions.clientLoading);
       return;
     }
 
@@ -198,7 +195,7 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     }
 
     if (this.photos().length === 0) {
-      this.error.set('Agrega al menos una fotografía de la receta.');
+      this.error.set(MESSAGES.prescriptions.photoRequired);
       return;
     }
 
@@ -214,12 +211,12 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     this.prescriptions.create(formData).subscribe({
       next: () => {
         this.saving.set(false);
-        this.toast.success('La receta se guardó correctamente.');
+        this.toast.success(MESSAGES.prescriptions.saveSuccess);
         this.router.navigate(['/clientes', client.id]);
       },
       error: (error) => {
         this.saving.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo guardar la receta.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.prescriptions.saveFallback));
       },
     });
   }

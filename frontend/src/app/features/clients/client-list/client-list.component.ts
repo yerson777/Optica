@@ -12,12 +12,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Client } from '../../../core/models';
 import { ClientService } from '../../../core/services/client.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
 import { formatPhone } from '../../../core/utils/format';
-import { PagerComponent } from '../../../shared/ui/pager.component';
+import { PaginationComponent } from '../../../shared/ui/pagination.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 
 @Component({
@@ -28,7 +29,7 @@ import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
     MatIconModule,
     MatProgressBarModule,
     StatusChipComponent,
-    PagerComponent,
+    PaginationComponent,
   ],
   templateUrl: './client-list.component.html',
   styleUrl: './client-list.component.scss',
@@ -47,7 +48,7 @@ export class ClientListComponent implements OnInit {
   readonly page = signal(1);
   readonly lastPage = signal(1);
   readonly total = signal(0);
-  readonly pageSize = 12;
+  readonly pageSize = signal(10);
 
   private readonly searchSubject = new Subject<string>();
 
@@ -93,7 +94,7 @@ export class ClientListComponent implements OnInit {
       .list({
         search: this.searchTerm().trim(),
         page: this.page(),
-        per_page: this.pageSize,
+        per_page: this.pageSize(),
       })
       .subscribe({
         next: (response) => {
@@ -104,9 +105,15 @@ export class ClientListComponent implements OnInit {
         },
         error: (error) => {
           this.loading.set(false);
-          this.toast.error(extractErrorMessage(error, 'No se pudo cargar la lista de clientes.'));
+          this.toast.error(extractErrorMessage(error, MESSAGES.clients.loadListFallback));
         },
       });
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.page.set(1);
+    this.load();
   }
 
   goToPage(page: number): void {

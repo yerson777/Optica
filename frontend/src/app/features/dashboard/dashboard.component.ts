@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterModule } from '@angular/router';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { DashboardData } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
@@ -93,7 +94,7 @@ export class DashboardComponent {
       },
       error: (error) => {
         this.loading.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo cargar el panel de inicio.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.dashboard.loadFallback));
       },
     });
   }

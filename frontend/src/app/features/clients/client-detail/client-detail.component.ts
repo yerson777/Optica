@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Client, Prescription, PrescriptionImage } from '../../../core/models';
 import { ClientService } from '../../../core/services/client.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -15,7 +16,7 @@ import {
   ImageViewerData,
   ImageViewerDialogComponent,
 } from '../../../shared/ui/image-viewer-dialog.component';
-import { PagerComponent } from '../../../shared/ui/pager.component';
+import { PaginationComponent } from '../../../shared/ui/pagination.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 
 @Component({
@@ -28,7 +29,7 @@ import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
     MatTooltipModule,
     StatusChipComponent,
     AuthImageComponent,
-    PagerComponent,
+    PaginationComponent,
   ],
   templateUrl: './client-detail.component.html',
   styleUrl: './client-detail.component.scss',
@@ -48,6 +49,7 @@ export class ClientDetailComponent implements OnInit {
   readonly ordersPage = signal(1);
   readonly prescriptionsLastPage = signal(1);
   readonly ordersLastPage = signal(1);
+  readonly pageSize = signal(10);
 
   ngOnInit(): void {
     this.load();
@@ -69,7 +71,7 @@ export class ClientDetailComponent implements OnInit {
         paginated: true,
         prescriptionsPage: this.prescriptionsPage(),
         ordersPage: this.ordersPage(),
-        perPage: 6,
+        perPage: this.pageSize(),
       })
       .subscribe({
         next: (response) => {
@@ -82,9 +84,16 @@ export class ClientDetailComponent implements OnInit {
         },
         error: (error) => {
           this.loading.set(false);
-          this.error.set(extractErrorMessage(error, 'No se pudo cargar la ficha del cliente.'));
+          this.error.set(extractErrorMessage(error, MESSAGES.clients.loadDetailFallback));
         },
       });
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.prescriptionsPage.set(1);
+    this.ordersPage.set(1);
+    this.load();
   }
 
   goPrescriptionsPage(page: number): void {
@@ -139,7 +148,7 @@ export class ClientDetailComponent implements OnInit {
     }
 
     if (!this.hasPrescriptions) {
-      this.toast.info('Primero registra una receta para poder crear el pedido.');
+      this.toast.info(MESSAGES.clients.prescriptionRequired);
       return;
     }
 

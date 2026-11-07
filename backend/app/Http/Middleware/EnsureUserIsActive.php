@@ -20,7 +20,7 @@ class EnsureUserIsActive
             }
 
             return response()->json([
-                'message' => 'Tu usuario está inactivo. Contacta al administrador.',
+                'message' => __('messages.auth.inactive'),
             ], 403);
         }
 

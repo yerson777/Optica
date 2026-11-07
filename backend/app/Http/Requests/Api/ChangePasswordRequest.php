@@ -23,10 +23,10 @@ class ChangePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required' => 'Escribe tu contraseña actual.',
-            'password.required' => 'Escribe la nueva contraseña.',
-            'password.confirmed' => 'Las contraseñas nuevas no coinciden.',
-            'password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'current_password.required' => __('messages.validation.auth.current_password_required'),
+            'password.required' => __('messages.validation.auth.new_password_required'),
+            'password.confirmed' => __('messages.validation.auth.passwords_mismatch'),
+            'password.min' => __('messages.validation.auth.password_min'),
         ];
     }
 }

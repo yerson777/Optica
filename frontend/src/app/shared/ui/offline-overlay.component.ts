@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { ConnectivityService } from '../../core/services/connectivity.service';
 
 @Component({
@@ -30,17 +31,14 @@ import { ConnectivityService } from '../../core/services/connectivity.service';
           >
             @if (connectivity.checking()) {
               <span class="offline__spinner"></span>
-              Comprobando…
+              {{ messages.common.checking }}
             } @else {
               <span class="material-icons">refresh</span>
-              Reintentar
+              {{ messages.common.retry }}
             }
           </button>
 
-          <p class="offline__hint">
-            Los datos se guardan en el servidor. Cuando vuelvas a tener conexión, podrás
-            continuar donde estabas.
-          </p>
+          <p class="offline__hint">{{ messages.connectivity.hint }}</p>
         </div>
       </div>
     }
@@ -147,6 +145,7 @@ import { ConnectivityService } from '../../core/services/connectivity.service';
 })
 export class OfflineOverlayComponent implements OnInit {
   readonly connectivity = inject(ConnectivityService);
+  readonly messages = MESSAGES;
 
   ngOnInit(): void {
     this.connectivity.start();
@@ -154,14 +153,14 @@ export class OfflineOverlayComponent implements OnInit {
 
   title(): string {
     return this.connectivity.problem() === 'network'
-      ? 'Sin conexión a internet'
-      : 'No podemos conectar con el servidor';
+      ? MESSAGES.connectivity.offlineTitle
+      : MESSAGES.connectivity.serverTitle;
   }
 
   message(): string {
     return this.connectivity.problem() === 'network'
-      ? 'Verifica tu red e inténtalo nuevamente.'
-      : 'Verifica que la computadora o servidor esté encendido, conectado a la misma red y que el sistema esté disponible.';
+      ? MESSAGES.connectivity.offlineMessage
+      : MESSAGES.connectivity.serverMessage;
   }
 
   icon(): string {

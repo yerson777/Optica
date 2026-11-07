@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { PrescriptionImage } from '../../core/models';
 import { ImageService } from '../../core/services/image.service';
 
@@ -57,7 +58,7 @@ export class AuthImageComponent implements OnChanges, OnDestroy {
   private subscription?: Subscription;
 
   @Input({ required: true }) image!: PrescriptionImage;
-  @Input() alt = 'Fotografía de receta';
+  @Input() alt: string = MESSAGES.imageViewer.defaultTitle;
 
   readonly src = signal<string | null>(null);
   readonly failed = signal(false);

@@ -41,15 +41,15 @@ class StoreUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'El nombre es obligatorio.',
-            'name.min' => 'El nombre debe tener al menos 3 letras.',
-            'username.required' => 'El nombre de usuario es obligatorio.',
-            'username.min' => 'El usuario debe tener al menos 3 caracteres.',
-            'username.regex' => 'El usuario solo puede tener letras, números, guiones y guiones bajos.',
-            'username.unique' => 'Ese nombre de usuario ya existe.',
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'name.required' => __('messages.validation.users.name_required'),
+            'name.min' => __('messages.validation.users.name_min'),
+            'username.required' => __('messages.validation.users.username_required'),
+            'username.min' => __('messages.validation.users.username_min'),
+            'username.regex' => __('messages.validation.users.username_regex'),
+            'username.unique' => __('messages.validation.users.username_unique'),
+            'password.required' => __('messages.validation.users.password_required'),
+            'password.confirmed' => __('messages.validation.users.password_confirmed'),
+            'password.min' => __('messages.validation.users.password_min'),
         ];
     }
 }

@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import {
   Client,
   Order,
@@ -31,7 +32,7 @@ import {
   ImageViewerData,
   ImageViewerDialogComponent,
 } from '../../shared/ui/image-viewer-dialog.component';
-import { PagerComponent } from '../../shared/ui/pager.component';
+import { PaginationComponent } from '../../shared/ui/pagination.component';
 import { StatusChipComponent } from '../../shared/ui/status-chip.component';
 
 type HistoryTab = 'orders' | 'prescriptions' | 'clients';
@@ -45,7 +46,7 @@ type HistoryTab = 'orders' | 'prescriptions' | 'clients';
     MatProgressBarModule,
     StatusChipComponent,
     AuthImageComponent,
-    PagerComponent,
+    PaginationComponent,
   ],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
@@ -69,6 +70,7 @@ export class HistoryComponent implements OnInit {
   readonly total = signal(0);
   readonly page = signal(1);
   readonly lastPage = signal(1);
+  readonly pageSize = signal(10);
   readonly searchTerm = signal('');
   readonly dateFrom = signal('');
   readonly dateTo = signal('');
@@ -115,7 +117,7 @@ export class HistoryComponent implements OnInit {
           to: this.dateTo(),
           status: this.statusFilter(),
           page: this.page(),
-          per_page: 15,
+            per_page: this.pageSize(),
         })
         .subscribe({
           next: (response) => {
@@ -140,7 +142,7 @@ export class HistoryComponent implements OnInit {
           from: this.dateFrom(),
           to: this.dateTo(),
           page: this.page(),
-          per_page: 12,
+            per_page: this.pageSize(),
         })
         .subscribe({
           next: (response) => {
@@ -182,7 +184,7 @@ export class HistoryComponent implements OnInit {
 
   private fail(error: unknown): void {
     this.loading.set(false);
-    this.toast.error(extractErrorMessage(error, 'No se pudo cargar el historial.'));
+    this.toast.error(extractErrorMessage(error, MESSAGES.history.loadFallback));
   }
 
   changeTab(tab: HistoryTab): void {
@@ -225,6 +227,12 @@ export class HistoryComponent implements OnInit {
     this.dateFrom.set('');
     this.dateTo.set('');
     this.statusFilter.set('');
+    this.page.set(1);
+    this.load();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
     this.page.set(1);
     this.load();
   }

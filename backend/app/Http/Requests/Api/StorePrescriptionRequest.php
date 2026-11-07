@@ -33,16 +33,16 @@ class StorePrescriptionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'client_id.required' => 'Selecciona un cliente.',
-            'client_id.exists' => 'El cliente seleccionado no existe.',
-            'registered_at.date_format' => 'La fecha de la receta no es válida.',
-            'registered_at.before_or_equal' => 'La fecha de la receta no puede ser futura.',
-            'images.required' => 'Agrega al menos una fotografía de la receta.',
-            'images.min' => 'Agrega al menos una fotografía de la receta.',
-            'images.max' => 'Puedes subir como máximo 8 fotografías a la vez.',
-            'images.*.mimes' => 'Cada fotografía debe ser JPG, JPEG, PNG o WEBP.',
-            'images.*.max' => 'Cada fotografía debe pesar como máximo 10 MB.',
-            'images.*.file' => 'El archivo seleccionado no es válido.',
+            'client_id.required' => __('messages.validation.prescriptions.client_required'),
+            'client_id.exists' => __('messages.validation.prescriptions.client_exists'),
+            'registered_at.date_format' => __('messages.validation.prescriptions.registered_at_invalid'),
+            'registered_at.before_or_equal' => __('messages.validation.prescriptions.registered_at_future'),
+            'images.required' => __('messages.validation.prescriptions.images_required'),
+            'images.min' => __('messages.validation.prescriptions.images_required'),
+            'images.max' => __('messages.validation.prescriptions.images_max'),
+            'images.*.mimes' => __('messages.validation.prescriptions.image_mimes'),
+            'images.*.max' => __('messages.validation.prescriptions.image_max_size'),
+            'images.*.file' => __('messages.validation.prescriptions.image_file'),
         ];
     }
 }

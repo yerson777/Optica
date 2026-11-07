@@ -59,12 +59,12 @@
             inputmode="tel"
             autocomplete="tel"
             maxlength="30"
-            placeholder="Ej. 987 654 321"
+            placeholder="Ej. 7123 4567"
           />
           <mat-icon matPrefix>smartphone</mat-icon>
-          <mat-hint>Solo números; puedes usar espacios. Entre 6 y 15 dígitos.</mat-hint>
+          <mat-hint>Solo números; puedes usar espacios. 8 dígitos (Bolivia).</mat-hint>
           @if (form.controls.phone.touched && form.controls.phone.invalid) {
-            <mat-error>Escribe un celular válido de 6 a 15 dígitos.</mat-error>
+            <mat-error>Escribe un celular válido de 8 dígitos.</mat-error>
           }
         </mat-form-field>
 

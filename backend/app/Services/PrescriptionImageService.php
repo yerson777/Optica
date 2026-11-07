@@ -37,7 +37,7 @@ class PrescriptionImageService
         $mime = $file->getMimeType();
 
         if (! in_array($mime, self::ALLOWED_MIME_TYPES, true)) {
-            throw new RuntimeException('Formato de imagen no permitido.');
+            throw new RuntimeException(__('messages.prescriptions.image_format_not_allowed'));
         }
 
         $extension = match ($mime) {
@@ -52,7 +52,7 @@ class PrescriptionImageService
         $path = $file->storeAs($directory, $filename, 'local');
 
         if ($path === false) {
-            throw new RuntimeException('No se pudo guardar la fotografía.');
+            throw new RuntimeException(__('messages.prescriptions.image_save_failed'));
         }
 
         return PrescriptionImage::create([

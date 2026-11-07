@@ -36,7 +36,7 @@ class SettingController extends Controller
 
         return response()->json([
             'data' => ['pending_alert_days' => $days],
-            'message' => 'Configuración guardada correctamente.',
+            'message' => __('messages.settings.saved'),
         ]);
     }
 }

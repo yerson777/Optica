@@ -83,6 +83,10 @@
             <button type="button" class="btn btn--outline btn--sm" (click)="open(order)">
               Ver pedido
             </button>
+            <button type="button" class="btn btn--success btn--sm" (click)="sendWhatsApp(order)">
+              <span class="material-icons">smartphone</span>
+              Avisar por WhatsApp
+            </button>
             <button
               type="button"
               class="btn btn--success btn--sm"
@@ -97,6 +101,13 @@
       }
     </div>
 
-    <app-pager [page]="page()" [lastPage]="lastPage()" (pageChange)="goToPage($event)" />
+    <app-pagination
+      [page]="page()"
+      [pageSize]="pageSize()"
+      [total]="total()"
+      [lastPage]="lastPage()"
+      (pageChange)="goToPage($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>

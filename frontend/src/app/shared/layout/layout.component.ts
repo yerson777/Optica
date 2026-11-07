@@ -15,6 +15,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, filter, finalize, of, switchMap, timer } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { MESSAGES } from '../../core/i18n/messages.es';
 import { Client, Paginated } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { ClientService } from '../../core/services/client.service';
@@ -248,17 +249,15 @@ export class LayoutComponent {
       const outcome = await this.pwa.promptInstall();
 
       if (outcome === 'accepted') {
-        this.toast.success('Aplicación instalada correctamente.');
+        this.toast.success(MESSAGES.layout.installAccepted);
       } else if (outcome === 'dismissed') {
-        this.toast.info('Puedes instalarla cuando quieras desde el menú del navegador.');
+        this.toast.info(MESSAGES.layout.installDismissed);
       }
 
       return;
     }
 
-    this.toast.info(
-      'Para instalar: abre el menú del navegador y elige “Instalar aplicación” o “Agregar a pantalla de inicio”.'
-    );
+    this.toast.info(MESSAGES.layout.installInstructions);
   }
 
   logout(): void {

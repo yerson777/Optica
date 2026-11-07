@@ -62,6 +62,6 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        return response()->json(['message' => 'Todos los avisos se marcaron como leídos.']);
+        return response()->json(['message' => __('messages.notifications.all_read')]);
     }
 }

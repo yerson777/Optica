@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Client, Prescription, PrescriptionImage } from '../../../core/models';
 import { ClientService } from '../../../core/services/client.service';
 import { OrderService } from '../../../core/services/order.service';
@@ -93,7 +94,7 @@ export class OrderFormComponent implements OnInit {
     const prescriptionId = Number(this.route.snapshot.queryParamMap.get('prescriptionId'));
 
     if (!clientId) {
-      this.toast.info('Selecciona primero un cliente para crear su pedido.');
+      this.toast.info(MESSAGES.orders.selectClientFirst);
       this.router.navigate(['/clientes']);
       return;
     }
@@ -114,7 +115,7 @@ export class OrderFormComponent implements OnInit {
       },
       error: (error) => {
         this.loading.set(false);
-        this.error.set(extractErrorMessage(error, 'No se pudo cargar el cliente.'));
+        this.error.set(extractErrorMessage(error, MESSAGES.clients.loadFallback));
       },
     });
   }
@@ -188,7 +189,7 @@ export class OrderFormComponent implements OnInit {
     }
 
     if (this.prescriptions.length === 0) {
-      this.error.set('Este cliente todavía no tiene una receta. Registra una antes de crear el pedido.');
+      this.error.set(MESSAGES.orders.noPrescription);
       return;
     }
 
@@ -198,7 +199,7 @@ export class OrderFormComponent implements OnInit {
     }
 
     if (this.advanceExceedsPrice()) {
-      this.error.set('El adelanto no puede ser mayor que el precio total.');
+      this.error.set(MESSAGES.orders.advanceExceedsPrice);
       return;
     }
 
@@ -220,12 +221,12 @@ export class OrderFormComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.saving.set(false);
-          this.toast.success(`Pedido #${response.data.id} registrado correctamente.`);
+          this.toast.success(MESSAGES.orders.createSuccess(response.data.id));
           this.router.navigate(['/pedidos', response.data.id]);
         },
         error: (error) => {
           this.saving.set(false);
-          this.error.set(extractErrorMessage(error, 'No se pudo registrar el pedido.'));
+          this.error.set(extractErrorMessage(error, MESSAGES.orders.createFallback));
         },
       });
   }
