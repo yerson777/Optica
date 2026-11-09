@@ -1,4 +1,5 @@
 import { MESSAGES } from '../i18n/messages.es';
+import { ORDER_STATUS_LABELS, Order } from '../models';
 
 export function formatPhone(phone: string | null | undefined): string {
   if (!phone) {
@@ -59,6 +60,29 @@ export function toInputDate(value: string | Date | null | undefined): string {
 
 export function todayInputDate(): string {
   return toInputDate(new Date());
+}
+
+export function formatPrescriptionBlockMessage(
+  orders: Order[] | null | undefined
+): string {
+  const list = orders ?? [];
+
+  if (!list.length) {
+    return MESSAGES.prescriptions.deleteBlockedOrders;
+  }
+
+  const labels = [
+    ...new Set(list.map((o) => ORDER_STATUS_LABELS[o.status] ?? o.status)),
+  ];
+  const count = list.length;
+
+  if (count === 1) {
+    return `Esta receta tiene 1 pedido asociado (${labels[0]}). Elimínalo desde Pedidos primero.`;
+  }
+
+  return `Esta receta tiene ${count} pedidos asociados (${labels.join(
+    ', '
+  )}). Elimínalos desde Pedidos primero.`;
 }
 
 export function formatDisplayDate(value: string | null | undefined): string {
