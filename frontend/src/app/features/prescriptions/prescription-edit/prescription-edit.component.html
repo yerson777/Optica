@@ -172,6 +172,15 @@
         <a [routerLink]="backLink()" class="btn btn--outline btn--lg">
           Cancelar
         </a>
+        <button
+          type="button"
+          class="btn btn--danger btn--lg form-actions__delete"
+          (click)="deletePrescription()"
+          [disabled]="saving() || loading()"
+        >
+          <span class="material-icons">delete</span>
+          Eliminar receta
+        </button>
       </div>
     </form>
   </div>

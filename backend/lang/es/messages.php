@@ -34,6 +34,8 @@ return [
         'images_added' => 'Fotografías agregadas correctamente.',
         'image_deleted' => 'Fotografía eliminada correctamente.',
         'image_replaced' => 'Fotografía reemplazada correctamente.',
+        'deleted' => 'Receta eliminada correctamente.',
+        'delete_blocked_orders' => 'No se puede eliminar la receta porque tiene pedidos asociados. Elimina o reasigna esos pedidos primero.',
     ],
     'users' => [
         'created' => 'Usuario creado correctamente. Ya puede iniciar sesión.',

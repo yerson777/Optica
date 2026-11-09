@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('/prescriptions', [PrescriptionController::class, 'store']);
     Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show']);
     Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update']);
+    Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy']);
     Route::post('/prescriptions/{prescription}/images', [PrescriptionController::class, 'addImages']);
     Route::post('/prescriptions/{prescription}/images/{prescriptionImage}', [PrescriptionController::class, 'replaceImage']);
     Route::delete('/prescriptions/{prescription}/images/{prescriptionImage}', [PrescriptionController::class, 'destroyImage']);

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Client;
+use App\Models\Order;
 use App\Models\Prescription;
 use App\Models\PrescriptionImage;
 use App\Models\User;
@@ -221,6 +222,40 @@ class PrescriptionTest extends TestCase
         $this->postJson('/api/prescriptions/'.$prescription->id.'/images/'.$image->id, [])
             ->assertStatus(422)
             ->assertJsonValidationErrors('image');
+    }
+
+    public function test_prescription_can_be_deleted_with_its_images(): void
+    {
+        [$prescription, $image] = $this->makePrescriptionWithImage();
+        $path = $image->file_path;
+
+        Storage::disk('local')->assertExists($path);
+
+        $this->deleteJson('/api/prescriptions/'.$prescription->id)
+            ->assertOk();
+
+        $this->assertDatabaseMissing('prescriptions', ['id' => $prescription->id]);
+        $this->assertDatabaseMissing('prescription_images', ['id' => $image->id]);
+        Storage::disk('local')->assertMissing($path);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'prescription.deleted']);
+    }
+
+    public function test_prescription_with_orders_cannot_be_deleted(): void
+    {
+        [$prescription] = $this->makePrescriptionWithImage();
+
+        Order::create([
+            'client_id' => $this->client->id,
+            'prescription_id' => $prescription->id,
+            'lens_type' => 'Monofocal',
+            'status' => Order::STATUS_PENDING,
+            'ordered_at' => now()->toDateString(),
+        ]);
+
+        $this->deleteJson('/api/prescriptions/'.$prescription->id)
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('prescriptions', ['id' => $prescription->id]);
     }
 
     /**

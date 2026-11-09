@@ -8,6 +8,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Client, Prescription, PrescriptionImage } from '../../../core/models';
 import { ClientService } from '../../../core/services/client.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { PrescriptionService } from '../../../core/services/prescription.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
 import { formatCurrency, formatPhone } from '../../../core/utils/format';
@@ -37,9 +39,11 @@ import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 })
 export class ClientDetailComponent implements OnInit {
   private readonly clients = inject(ClientService);
+  private readonly prescriptions = inject(PrescriptionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmDialogService);
   private readonly dialog = inject(MatDialog);
 
   readonly client = signal<Client | null>(null);
@@ -156,6 +160,39 @@ export class ClientDetailComponent implements OnInit {
       queryParams: {
         clientId: client.id,
         ...(prescription ? { prescriptionId: prescription.id } : {}),
+      },
+    });
+  }
+
+  async deletePrescription(prescription: Prescription): Promise<void> {
+    if (this.orderCount(prescription) > 0) {
+      this.toast.info(MESSAGES.prescriptions.deleteBlockedOrders);
+      return;
+    }
+
+    const confirmed = await this.confirm.ask({
+      title: MESSAGES.prescriptions.deleteConfirmTitle,
+      message: MESSAGES.prescriptions.deleteConfirmMessage,
+      confirmText: MESSAGES.prescriptions.deleteConfirmText,
+      cancelText: MESSAGES.prescriptions.deleteCancelText,
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.prescriptions.delete(prescription.id).subscribe({
+      next: () => {
+        if ((this.client()?.prescriptions?.length ?? 0) <= 1 && this.prescriptionsPage() > 1) {
+          this.prescriptionsPage.update((page) => page - 1);
+        }
+
+        this.toast.success(MESSAGES.prescriptions.deleteSuccess);
+        this.load();
+      },
+      error: (error) => {
+        this.toast.error(extractErrorMessage(error, MESSAGES.prescriptions.deleteFallback));
       },
     });
   }

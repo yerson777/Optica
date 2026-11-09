@@ -146,6 +146,36 @@ class PrescriptionController extends Controller
         ]);
     }
 
+    public function destroy(Prescription $prescription): JsonResponse
+    {
+        if ($prescription->orders()->exists()) {
+            return response()->json([
+                'message' => __('messages.prescriptions.delete_blocked_orders'),
+            ], 422);
+        }
+
+        $prescriptionId = $prescription->id;
+
+        DB::transaction(function () use ($prescription, $prescriptionId) {
+            foreach ($prescription->images as $image) {
+                $this->images->deleteOne($image);
+            }
+
+            $this->audit->log(
+                'prescription.deleted',
+                "Eliminó la receta #{$prescriptionId}",
+                $prescription,
+                ['prescription_id' => $prescriptionId, 'client_id' => $prescription->client_id]
+            );
+
+            $prescription->delete();
+        });
+
+        return response()->json([
+            'message' => __('messages.prescriptions.deleted'),
+        ]);
+    }
+
     public function destroyImage(Prescription $prescription, PrescriptionImage $prescriptionImage): JsonResponse
     {
         abort_unless($prescriptionImage->prescription_id === $prescription->id, 404);

@@ -65,4 +65,8 @@ export class PrescriptionService {
       `${this.api}/prescriptions/${prescriptionId}/images/${imageId}`
     );
   }
+
+  delete(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.api}/prescriptions/${id}`);
+  }
 }

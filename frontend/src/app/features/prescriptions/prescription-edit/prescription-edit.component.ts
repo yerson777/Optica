@@ -235,6 +235,47 @@ export class PrescriptionEditComponent implements OnInit {
       });
   }
 
+  async deletePrescription(): Promise<void> {
+    const prescription = this.prescription();
+
+    if (!prescription) {
+      return;
+    }
+
+    if ((prescription.orders?.length ?? 0) > 0) {
+      this.toast.info(MESSAGES.prescriptions.deleteBlockedOrders);
+      return;
+    }
+
+    const confirmed = await this.confirm.ask({
+      title: MESSAGES.prescriptions.deleteConfirmTitle,
+      message: MESSAGES.prescriptions.deleteConfirmMessage,
+      confirmText: MESSAGES.prescriptions.deleteConfirmText,
+      cancelText: MESSAGES.prescriptions.deleteCancelText,
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.error.set(null);
+
+    this.prescriptions.delete(prescription.id).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.imagesList().forEach((image) => this.images.forget(image.id));
+        this.toast.success(MESSAGES.prescriptions.deleteSuccess);
+        this.router.navigate(this.backLink());
+      },
+      error: (error) => {
+        this.saving.set(false);
+        this.error.set(extractErrorMessage(error, MESSAGES.prescriptions.deleteFallback));
+      },
+    });
+  }
+
   private addFiles(files: File[]): void {
     if (!files.length) {
       return;

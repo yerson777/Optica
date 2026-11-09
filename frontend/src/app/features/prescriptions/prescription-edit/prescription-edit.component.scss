@@ -58,6 +58,10 @@
   flex-wrap: wrap;
 }
 
+.form-actions__delete {
+  margin-left: auto;
+}
+
 .photo-grid--editable {
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
