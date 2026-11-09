@@ -53,6 +53,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy']);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);

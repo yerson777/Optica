@@ -73,6 +73,15 @@
             </button>
           </div>
         }
+
+        @if (order.status === 'delivered' || order.status === 'cancelled') {
+          <div class="order-hero__actions">
+            <button type="button" class="btn btn--danger btn--sm" [disabled]="busy()" (click)="delete()">
+              <span class="material-icons">delete</span>
+              Eliminar pedido
+            </button>
+          </div>
+        }
       </div>
     </section>
 

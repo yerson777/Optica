@@ -150,6 +150,45 @@ export class OrderDetailComponent implements OnInit {
     );
   }
 
+  async delete(): Promise<void> {
+    const order = this.order();
+
+    if (!order) {
+      return;
+    }
+
+    const confirmed = await this.confirm.ask({
+      title: MESSAGES.orders.deleteTitle,
+      message: MESSAGES.orders.deleteMessageFor(
+        order.id,
+        order.client?.full_name ?? ''
+      ),
+      confirmText: MESSAGES.orders.deleteConfirm,
+      cancelText: MESSAGES.common.cancel,
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.busy.set(true);
+
+    this.orders.destroy(order.id).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.toast.success(MESSAGES.orders.deleteSuccess);
+        this.router.navigate(['/pedidos']);
+      },
+      error: (error) => {
+        this.busy.set(false);
+        this.toast.error(
+          extractErrorMessage(error, MESSAGES.orders.deleteFallback)
+        );
+      },
+    });
+  }
+
   sendWhatsApp(order: Order): void {
     const waPhone = formatWhatsAppNumber(order.client?.phone ?? null);
 

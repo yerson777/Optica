@@ -247,6 +247,41 @@ export class OrderListComponent implements OnInit {
     });
   }
 
+  async deleteOrder(order: Order): Promise<void> {
+    if (this.busyId() !== null) {
+      return;
+    }
+
+    const confirmed = await this.confirm.ask({
+      title: MESSAGES.orders.deleteTitle,
+      message: MESSAGES.orders.deleteMessageFor(
+        order.id,
+        order.client?.full_name ?? ''
+      ),
+      confirmText: MESSAGES.orders.deleteConfirm,
+      cancelText: MESSAGES.common.cancel,
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.busyId.set(order.id);
+
+    this.orders.destroy(order.id).subscribe({
+      next: () => {
+        this.busyId.set(null);
+        this.toast.success(MESSAGES.orders.deleteSuccess);
+        this.load();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.deleteFallback));
+      },
+    });
+  }
+
   phone(order: Order): string {
     return formatPhone(order.client?.phone);
   }

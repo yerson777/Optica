@@ -59,4 +59,8 @@ export class OrderService {
       { status, note: note ?? null }
     );
   }
+
+  destroy(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.api}/orders/${id}`);
+  }
 }

@@ -147,6 +147,16 @@
                         Anular
                       </button>
                     }
+                    @if (order.status === 'delivered' || order.status === 'cancelled') {
+                      <button
+                        type="button"
+                        class="btn btn--danger btn--sm"
+                        [disabled]="busyId() === order.id"
+                        (click)="deleteOrder(order)"
+                      >
+                        Eliminar
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -210,6 +220,16 @@
                 (click)="cancelOrder(order)"
               >
                 Anular
+              </button>
+            }
+            @if (order.status === 'delivered' || order.status === 'cancelled') {
+              <button
+                type="button"
+                class="btn btn--danger btn--sm"
+                [disabled]="busyId() === order.id"
+                (click)="deleteOrder(order)"
+              >
+                Eliminar
               </button>
             }
           </div>

@@ -25,6 +25,8 @@ return [
         'same_status' => 'El pedido ya se encuentra en ese estado.',
         'invalid_transition' => 'No se puede cambiar el pedido de ":from" a ":to".',
         'created' => 'Pedido registrado correctamente.',
+        'deleted' => 'Pedido eliminado correctamente.',
+        'delete_invalid_status' => 'No se puede eliminar un pedido en estado ":status". Solo se pueden eliminar pedidos entregados o cancelados.',
     ],
     'prescriptions' => [
         'image_format_not_allowed' => 'Formato de imagen no permitido. Usa JPG, PNG o WEBP.',

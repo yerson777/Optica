@@ -67,6 +67,23 @@ class OrderController extends Controller
         return response()->json(['data' => $order]);
     }
 
+    public function destroy(Request $request, Order $order): JsonResponse
+    {
+        if (! in_array($order->status, [Order::STATUS_DELIVERED, Order::STATUS_CANCELLED], true)) {
+            return response()->json([
+                'message' => __('messages.orders.delete_invalid_status', [
+                    'status' => $order->status_label,
+                ]),
+            ], 422);
+        }
+
+        $this->orders->destroy($order, $request->user());
+
+        return response()->json([
+            'message' => __('messages.orders.deleted'),
+        ]);
+    }
+
     public function updateStatus(UpdateOrderStatusRequest $request, Order $order): JsonResponse
     {
         $data = $request->validated();

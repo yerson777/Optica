@@ -134,6 +134,21 @@ class OrderService
         return $this->loadOrder($order);
     }
 
+    public function destroy(Order $order, User $user): void
+    {
+        DB::transaction(function () use ($order, $user) {
+            $order->delete();
+
+            $this->audit->log(
+                'order.deleted',
+                "Eliminó el pedido #{$order->id}",
+                $order,
+                ['order_id' => $order->id],
+                $user->id
+            );
+        });
+    }
+
     private function loadOrder(Order $order): Order
     {
         return $order->fresh()->load([
