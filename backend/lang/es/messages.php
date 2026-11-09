@@ -30,7 +30,10 @@ return [
         'image_format_not_allowed' => 'Formato de imagen no permitido. Usa JPG, PNG o WEBP.',
         'image_save_failed' => 'No se pudo guardar la fotografía. Inténtalo nuevamente.',
         'created' => 'Receta registrada correctamente.',
+        'updated' => 'Receta actualizada correctamente.',
         'images_added' => 'Fotografías agregadas correctamente.',
+        'image_deleted' => 'Fotografía eliminada correctamente.',
+        'image_replaced' => 'Fotografía reemplazada correctamente.',
     ],
     'users' => [
         'created' => 'Usuario creado correctamente. Ya puede iniciar sesión.',
@@ -87,6 +90,7 @@ return [
             'image_max_size' => 'Cada fotografía debe pesar como máximo 10 MB.',
             'image_file' => 'El archivo seleccionado no es válido.',
             'images_select_required' => 'Selecciona al menos una fotografía.',
+            'image_select_required' => 'Selecciona una fotografía.',
         ],
         'users' => [
             'name_required' => 'El nombre es obligatorio.',

@@ -66,6 +66,24 @@ class PrescriptionImageService
         ]);
     }
 
+    public function replaceOne(
+        Prescription $prescription,
+        PrescriptionImage $image,
+        UploadedFile $file,
+        ?int $userId
+    ): PrescriptionImage {
+        $replacement = $this->storeOne($prescription, $file, $userId);
+        $this->deleteOne($image);
+
+        return $replacement;
+    }
+
+    public function deleteOne(PrescriptionImage $image): void
+    {
+        Storage::disk('local')->delete($image->file_path);
+        $image->delete();
+    }
+
     private function safeOriginalName(string $name, string $extension): string
     {
         $base = pathinfo($name, PATHINFO_FILENAME);

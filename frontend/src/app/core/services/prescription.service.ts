@@ -38,7 +38,31 @@ export class PrescriptionService {
     return this.http.post<ApiData<Prescription>>(`${this.api}/prescriptions`, formData);
   }
 
+  update(
+    id: number,
+    payload: { registered_at: string; observations: string | null }
+  ): Observable<ApiData<Prescription>> {
+    return this.http.put<ApiData<Prescription>>(`${this.api}/prescriptions/${id}`, payload);
+  }
+
   addImages(id: number, formData: FormData): Observable<ApiData<Prescription>> {
     return this.http.post<ApiData<Prescription>>(`${this.api}/prescriptions/${id}/images`, formData);
+  }
+
+  replaceImage(
+    prescriptionId: number,
+    imageId: number,
+    formData: FormData
+  ): Observable<ApiData<Prescription>> {
+    return this.http.post<ApiData<Prescription>>(
+      `${this.api}/prescriptions/${prescriptionId}/images/${imageId}`,
+      formData
+    );
+  }
+
+  deleteImage(prescriptionId: number, imageId: number): Observable<ApiData<Prescription>> {
+    return this.http.delete<ApiData<Prescription>>(
+      `${this.api}/prescriptions/${prescriptionId}/images/${imageId}`
+    );
   }
 }

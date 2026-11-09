@@ -59,6 +59,17 @@ export class ImageService {
       });
   }
 
+  forget(id: number): void {
+    const url = this.cache.get(id);
+
+    if (url) {
+      URL.revokeObjectURL(url);
+      this.cache.delete(id);
+    }
+
+    this.pending.delete(id);
+  }
+
   clear(): void {
     this.cache.forEach((url) => URL.revokeObjectURL(url));
     this.cache.clear();

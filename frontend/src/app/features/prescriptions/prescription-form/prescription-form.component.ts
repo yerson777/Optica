@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
+  ViewChild,
   inject,
   signal,
 } from '@angular/core';
@@ -17,6 +19,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MESSAGES } from '../../../core/i18n/messages.es';
 import { Client } from '../../../core/models';
 import { ClientService } from '../../../core/services/client.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { PrescriptionService } from '../../../core/services/prescription.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
@@ -57,6 +60,12 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(ConfirmDialogService);
+
+  @ViewChild('cameraInput') private cameraInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('galleryInput') private galleryInput?: ElementRef<HTMLInputElement>;
+
+  private replaceIndex: number | null = null;
 
   readonly client = signal<Client | null>(null);
   readonly photos = signal<PhotoItem[]>([]);
@@ -101,7 +110,9 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     return client ? ['/clientes', client.id] : ['/clientes'];
   }
 
-  openCamera(fallbackInput: HTMLInputElement): void {
+  openCamera(fallbackInput: HTMLInputElement, replaceIndex: number | null = null): void {
+    this.replaceIndex = replaceIndex;
+
     if (!navigator.mediaDevices?.getUserMedia) {
       this.toast.info(MESSAGES.prescriptions.browserCameraUnavailable);
       fallbackInput.click();
@@ -119,15 +130,38 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     );
 
     dialogRef.afterClosed().subscribe((file) => {
-      if (file) {
+      const target = this.replaceIndex;
+      this.replaceIndex = null;
+
+      if (!file) {
+        return;
+      }
+
+      if (target === null) {
         this.addFiles([file]);
+      } else {
+        this.replaceFile(target, file);
       }
     });
+  }
+
+  changePhoto(index: number, fallbackInput: HTMLInputElement): void {
+    this.openCamera(fallbackInput, index);
   }
 
   onFilesSelected(event: Event, input: HTMLInputElement): void {
     const files = Array.from((event.target as HTMLInputElement).files ?? []);
     input.value = '';
+    const target = this.replaceIndex;
+    this.replaceIndex = null;
+
+    if (target !== null) {
+      if (files[0]) {
+        this.replaceFile(target, files[0]);
+      }
+      return;
+    }
+
     this.addFiles(files);
   }
 
@@ -168,6 +202,52 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  private replaceFile(index: number, file: File): void {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      this.toast.error(MESSAGES.prescriptions.invalidFormat(file.name));
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      this.toast.error(MESSAGES.prescriptions.tooLarge(file.name));
+      return;
+    }
+
+    const existing = this.photos()[index];
+
+    if (!existing) {
+      return;
+    }
+
+    const replacement: PhotoItem = {
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name,
+    };
+
+    URL.revokeObjectURL(existing.preview);
+    this.photos.update((photos) =>
+      photos.map((photo, position) => (position === index ? replacement : photo))
+    );
+    this.resetInputs();
+  }
+
+  async confirmRemove(index: number): Promise<void> {
+    const confirmed = await this.confirm.ask({
+      title: 'Eliminar foto',
+      message: '¿Eliminar esta foto?',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.removePhoto(index);
+  }
+
   removePhoto(index: number): void {
     this.photos.update((photos) => {
       const copy = [...photos];
@@ -179,6 +259,17 @@ export class PrescriptionFormComponent implements OnInit, OnDestroy {
 
       return copy;
     });
+    this.resetInputs();
+  }
+
+  private resetInputs(): void {
+    if (this.cameraInput) {
+      this.cameraInput.nativeElement.value = '';
+    }
+
+    if (this.galleryInput) {
+      this.galleryInput.nativeElement.value = '';
+    }
   }
 
   submit(): void {

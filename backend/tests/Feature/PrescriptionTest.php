@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Client;
+use App\Models\Prescription;
 use App\Models\PrescriptionImage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -142,5 +143,107 @@ class PrescriptionTest extends TestCase
 
         $this->get('/api/prescription-images/'.$image->id.'/file')
             ->assertStatus(401);
+    }
+
+    public function test_prescription_metadata_can_be_updated(): void
+    {
+        [$prescription] = $this->makePrescriptionWithImage();
+
+        $this->putJson('/api/prescriptions/'.$prescription->id, [
+            'registered_at' => now()->subDay()->toDateString(),
+            'observations' => 'Observación editada.',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.observations', 'Observación editada.');
+
+        $this->assertDatabaseHas('prescriptions', [
+            'id' => $prescription->id,
+            'observations' => 'Observación editada.',
+        ]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'prescription.updated']);
+    }
+
+    public function test_prescription_image_can_be_deleted(): void
+    {
+        [$prescription, $image] = $this->makePrescriptionWithImage();
+
+        Storage::disk('local')->assertExists($image->file_path);
+
+        $this->deleteJson('/api/prescriptions/'.$prescription->id.'/images/'.$image->id)
+            ->assertOk()
+            ->assertJsonCount(0, 'data.images');
+
+        $this->assertDatabaseMissing('prescription_images', ['id' => $image->id]);
+        Storage::disk('local')->assertMissing($image->file_path);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'prescription.image_deleted']);
+    }
+
+    public function test_prescription_image_from_another_prescription_cannot_be_deleted(): void
+    {
+        [$prescriptionA] = $this->makePrescriptionWithImage();
+        [, $imageB] = $this->makePrescriptionWithImage();
+
+        $this->deleteJson('/api/prescriptions/'.$prescriptionA->id.'/images/'.$imageB->id)
+            ->assertStatus(404);
+
+        $this->assertDatabaseHas('prescription_images', ['id' => $imageB->id]);
+    }
+
+    public function test_prescription_image_can_be_replaced(): void
+    {
+        [$prescription, $image] = $this->makePrescriptionWithImage();
+        $oldPath = $image->file_path;
+
+        $file = UploadedFile::fake()->createWithContent(
+            'nueva.png',
+            base64_decode(self::PNG_BASE64)
+        );
+
+        $this->post('/api/prescriptions/'.$prescription->id.'/images/'.$image->id, [
+            'image' => $file,
+        ], ['Accept' => 'application/json'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data.images');
+
+        $replacement = PrescriptionImage::query()->firstOrFail();
+
+        $this->assertNotSame($image->id, $replacement->id);
+        $this->assertDatabaseMissing('prescription_images', ['id' => $image->id]);
+        Storage::disk('local')->assertMissing($oldPath);
+        Storage::disk('local')->assertExists($replacement->file_path);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'prescription.image_replaced']);
+    }
+
+    public function test_prescription_image_replacement_requires_a_file(): void
+    {
+        [$prescription, $image] = $this->makePrescriptionWithImage();
+
+        $this->postJson('/api/prescriptions/'.$prescription->id.'/images/'.$image->id, [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('image');
+    }
+
+    /**
+     * @return array{0: Prescription, 1: PrescriptionImage}
+     */
+    private function makePrescriptionWithImage(): array
+    {
+        $file = UploadedFile::fake()->createWithContent(
+            'receta.png',
+            base64_decode(self::PNG_BASE64)
+        );
+
+        $response = $this->post('/api/prescriptions', [
+            'client_id' => $this->client->id,
+            'registered_at' => now()->toDateString(),
+            'images' => [$file],
+        ], ['Accept' => 'application/json'])->assertCreated();
+
+        $prescription = Prescription::query()->findOrFail($response->json('data.id'));
+        $image = PrescriptionImage::query()
+            ->where('prescription_id', $prescription->id)
+            ->firstOrFail();
+
+        return [$prescription, $image];
     }
 }

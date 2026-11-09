@@ -86,29 +86,31 @@
   display: block;
 }
 
-.photo-preview__remove {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(20, 40, 40, 0.72);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+.photo-grid--editable {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
-.photo-preview__remove:hover {
-  background: var(--optic-danger);
+.photo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.photo-preview__remove mat-icon {
+.photo-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.photo-preview__action {
+  flex: 1 1 auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+.photo-preview__action .material-icons {
   font-size: 18px;
-  display: grid;
-  place-items: center;
 }
 
 .photo-preview__label {

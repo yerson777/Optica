@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StorePrescriptionImageRequest;
 use App\Http\Requests\Api\StorePrescriptionRequest;
+use App\Http\Requests\Api\UpdatePrescriptionImageRequest;
+use App\Http\Requests\Api\UpdatePrescriptionRequest;
 use App\Models\Prescription;
+use App\Models\PrescriptionImage;
 use App\Services\AuditService;
 use App\Services\PrescriptionImageService;
 use Illuminate\Http\JsonResponse;
@@ -111,6 +114,82 @@ class PrescriptionController extends Controller
                 "Agregó fotografías a la receta #{$prescription->id}",
                 $prescription,
                 ['images' => count($request->file('images', []))]
+            );
+        });
+
+        return response()->json([
+            'data' => $prescription->fresh()->load('images'),
+        ]);
+    }
+
+    public function update(UpdatePrescriptionRequest $request, Prescription $prescription): JsonResponse
+    {
+        $data = $request->validated();
+
+        $prescription->update([
+            'observations' => $data['observations'] ?? null,
+            'registered_at' => $data['registered_at'],
+        ]);
+
+        $this->audit->log(
+            'prescription.updated',
+            "Actualizó la receta #{$prescription->id}",
+            $prescription
+        );
+
+        return response()->json([
+            'data' => $prescription->fresh()->load([
+                'client:id,full_name,phone',
+                'creator:id,name',
+                'images',
+            ]),
+        ]);
+    }
+
+    public function destroyImage(Prescription $prescription, PrescriptionImage $prescriptionImage): JsonResponse
+    {
+        abort_unless($prescriptionImage->prescription_id === $prescription->id, 404);
+
+        $imageId = $prescriptionImage->id;
+
+        DB::transaction(function () use ($prescription, $prescriptionImage, $imageId) {
+            $this->images->deleteOne($prescriptionImage);
+
+            $this->audit->log(
+                'prescription.image_deleted',
+                "Eliminó una fotografía de la receta #{$prescription->id}",
+                $prescription,
+                ['image_id' => $imageId]
+            );
+        });
+
+        return response()->json([
+            'data' => $prescription->fresh()->load('images'),
+        ]);
+    }
+
+    public function replaceImage(
+        UpdatePrescriptionImageRequest $request,
+        Prescription $prescription,
+        PrescriptionImage $prescriptionImage
+    ): JsonResponse {
+        abort_unless($prescriptionImage->prescription_id === $prescription->id, 404);
+
+        $oldImageId = $prescriptionImage->id;
+
+        DB::transaction(function () use ($request, $prescription, $prescriptionImage, $oldImageId) {
+            $replacement = $this->images->replaceOne(
+                $prescription,
+                $prescriptionImage,
+                $request->file('image'),
+                $request->user()->id
+            );
+
+            $this->audit->log(
+                'prescription.image_replaced',
+                "Reemplazó una fotografía de la receta #{$prescription->id}",
+                $prescription,
+                ['image_id' => $oldImageId, 'new_image_id' => $replacement->id]
             );
         });
 

@@ -91,19 +91,33 @@
           <strong>{{ photos().length }} {{ photos().length === 1 ? 'fotografía' : 'fotografías' }}</strong>
           <span class="muted small">Revisa que se puedan leer bien.</span>
         </div>
-        <div class="photo-grid">
+        <div class="photo-grid photo-grid--editable">
           @for (photo of photos(); track photo.preview; let i = $index) {
-            <div class="photo-preview">
-              <img [src]="photo.preview" [alt]="photo.name" />
-              <button
-                type="button"
-                class="photo-preview__remove"
-                (click)="removePhoto(i)"
-                aria-label="Quitar fotografía"
-              >
-                <mat-icon>close</mat-icon>
-              </button>
-              <span class="photo-preview__label">Foto {{ i + 1 }}</span>
+            <div class="photo-item">
+              <div class="photo-preview">
+                <img [src]="photo.preview" [alt]="photo.name" />
+                <span class="photo-preview__label">Foto {{ i + 1 }}</span>
+              </div>
+              <div class="photo-preview__actions">
+                <button
+                  type="button"
+                  class="btn btn--outline btn--sm photo-preview__action"
+                  (click)="changePhoto(i, galleryInput)"
+                  aria-label="Cambiar foto"
+                >
+                  <mat-icon>photo_camera</mat-icon>
+                  Cambiar foto
+                </button>
+                <button
+                  type="button"
+                  class="btn btn--danger btn--sm photo-preview__action"
+                  (click)="confirmRemove(i)"
+                  aria-label="Eliminar foto"
+                >
+                  <mat-icon>delete</mat-icon>
+                  Eliminar foto
+                </button>
+              </div>
             </div>
           }
         </div>

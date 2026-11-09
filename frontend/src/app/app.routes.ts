@@ -56,6 +56,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'clientes/:id/recetas/:prescriptionId/editar',
+        loadComponent: () =>
+          import('./features/prescriptions/prescription-edit/prescription-edit.component').then(
+            (m) => m.PrescriptionEditComponent
+          ),
+      },
+      {
         path: 'usuarios',
         loadComponent: () =>
           import('./features/users/users.component').then((m) => m.UsersComponent),

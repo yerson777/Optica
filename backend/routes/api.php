@@ -40,7 +40,10 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/prescriptions', [PrescriptionController::class, 'index']);
     Route::post('/prescriptions', [PrescriptionController::class, 'store']);
     Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show']);
+    Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update']);
     Route::post('/prescriptions/{prescription}/images', [PrescriptionController::class, 'addImages']);
+    Route::post('/prescriptions/{prescription}/images/{prescriptionImage}', [PrescriptionController::class, 'replaceImage']);
+    Route::delete('/prescriptions/{prescription}/images/{prescriptionImage}', [PrescriptionController::class, 'destroyImage']);
 
     Route::get('/prescription-images/{prescriptionImage}/file', [PrescriptionImageController::class, 'file']);
     Route::get('/prescription-images/{prescriptionImage}/download', [PrescriptionImageController::class, 'download']);
