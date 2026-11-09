@@ -127,7 +127,7 @@ export class NotificationsComponent implements OnInit {
     const days = Number(this.alertDays());
 
     if (!Number.isInteger(days) || days < 1 || days > 60) {
-      this.toast.error(MESSAGES.notifications.invalidDays);
+      this.toast.warning(MESSAGES.notifications.invalidDays);
       return;
     }
 

@@ -12,7 +12,7 @@ import { ConfirmDialogService } from '../../../core/services/confirm-dialog.serv
 import { PrescriptionService } from '../../../core/services/prescription.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
-import { formatCurrency, formatPhone } from '../../../core/utils/format';
+import { formatCurrency, formatDisplayDate, formatPhone } from '../../../core/utils/format';
 import { AuthImageComponent } from '../../../shared/ui/auth-image.component';
 import {
   ImageViewerData,
@@ -166,13 +166,15 @@ export class ClientDetailComponent implements OnInit {
 
   async deletePrescription(prescription: Prescription): Promise<void> {
     if (this.orderCount(prescription) > 0) {
-      this.toast.info(MESSAGES.prescriptions.deleteBlockedOrders);
+      this.toast.warning(MESSAGES.prescriptions.deleteBlockedOrders);
       return;
     }
 
     const confirmed = await this.confirm.ask({
       title: MESSAGES.prescriptions.deleteConfirmTitle,
-      message: MESSAGES.prescriptions.deleteConfirmMessage,
+      message: MESSAGES.prescriptions.deleteConfirmMessageFor(
+        formatDisplayDate(prescription.registered_at)
+      ),
       confirmText: MESSAGES.prescriptions.deleteConfirmText,
       cancelText: MESSAGES.prescriptions.deleteCancelText,
       danger: true,

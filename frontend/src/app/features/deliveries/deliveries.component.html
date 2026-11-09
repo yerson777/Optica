@@ -96,6 +96,14 @@
               <span class="material-icons">check</span>
               Marcar entregado
             </button>
+            <button
+              type="button"
+              class="btn btn--danger btn--sm"
+              [disabled]="busyId() === order.id"
+              (click)="cancelOrder(order)"
+            >
+              Anular
+            </button>
           </div>
         </article>
       }

@@ -16,6 +16,7 @@ export const MESSAGES = {
     retry: 'Reintentar',
     checking: 'Comprobando…',
     noPhone: 'Sin celular',
+    invalidPhone: 'El cliente no tiene un número de celular válido registrado.',
     emptyValue: '—',
   },
   auth: {
@@ -43,6 +44,7 @@ export const MESSAGES = {
     duplicateOutro: 'Si estás seguro de que es una persona diferente, puedes continuar.',
     duplicateConfirm: 'Sí, registrar de todas formas',
     duplicateReview: 'Revisar datos',
+    duplicateFound: 'Ya existe un cliente con ese nombre o número de celular.',
     prescriptionRequired: 'Primero registra una receta para poder crear el pedido.',
   },
   orders: {
@@ -71,10 +73,13 @@ export const MESSAGES = {
     backToPendingTitle: 'Volver a pendiente',
     backToPendingMessage: 'El pedido volverá a la lista de pendientes. ¿Deseas continuar?',
     backToPendingConfirm: 'Sí, volver a pendiente',
-    cancelTitle: 'Cancelar pedido',
-    cancelMessage:
-      'El pedido quedará registrado como cancelado y no se borrará del historial.\n\n¿Deseas continuar?',
-    cancelConfirm: 'Sí, cancelar pedido',
+    cancelAction: 'Anular',
+    cancelTitle: 'Anular pedido',
+    cancelMessageFor: (id: number, client: string) =>
+      `¿Anular el pedido #${id} de ${client}?\n\nQuedará registrado como anulado y no se borrará del historial.`,
+    cancelConfirm: 'Sí, anular pedido',
+    cancelSuccess: 'El pedido se anuló correctamente.',
+    cancelFallback: 'No se pudo anular el pedido. Inténtalo nuevamente.',
     back: 'Volver',
     updatedFallback: 'Pedido actualizado correctamente.',
     deliveryConfirmTitle: 'Confirmar entrega',
@@ -110,6 +115,8 @@ export const MESSAGES = {
     deleteConfirmTitle: 'Eliminar receta',
     deleteConfirmMessage:
       'Se eliminarán la receta y todas sus fotografías. Esta acción no se puede deshacer.',
+    deleteConfirmMessageFor: (date: string) =>
+      `¿Eliminar la receta del ${date}?\n\nSe borrarán todas sus fotografías y esta acción no se puede deshacer.`,
     deleteConfirmText: 'Eliminar',
     deleteCancelText: 'Cancelar',
     deleteBlockedOrders:

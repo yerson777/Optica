@@ -137,6 +137,16 @@
                         Entregar
                       </button>
                     }
+                    @if (order.status === 'pending' || order.status === 'ready') {
+                      <button
+                        type="button"
+                        class="btn btn--danger btn--sm"
+                        [disabled]="busyId() === order.id"
+                        (click)="cancelOrder(order)"
+                      >
+                        Anular
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -190,6 +200,16 @@
                 (click)="markDelivered(order)"
               >
                 Entregar
+              </button>
+            }
+            @if (order.status === 'pending' || order.status === 'ready') {
+              <button
+                type="button"
+                class="btn btn--danger btn--sm"
+                [disabled]="busyId() === order.id"
+                (click)="cancelOrder(order)"
+              >
+                Anular
               </button>
             }
           </div>

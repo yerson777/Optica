@@ -121,7 +121,7 @@ export class ClientFormComponent implements OnInit {
       }>;
 
       if (duplicates.length > 0) {
-        this.error.set('Ya existe un cliente con ese nombre o número de celular.');
+        this.error.set(MESSAGES.clients.duplicateFound);
         return;
       }
     }

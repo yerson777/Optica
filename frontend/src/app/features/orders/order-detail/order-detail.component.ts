@@ -135,10 +135,16 @@ export class OrderDetailComponent implements OnInit {
   }
 
   async cancel(): Promise<void> {
+    const order = this.order();
+
+    if (!order) {
+      return;
+    }
+
     await this.changeStatus(
       'cancelled',
       MESSAGES.orders.cancelTitle,
-      MESSAGES.orders.cancelMessage,
+      MESSAGES.orders.cancelMessageFor(order.id, order.client?.full_name ?? ''),
       MESSAGES.orders.cancelConfirm,
       true
     );
@@ -148,7 +154,7 @@ export class OrderDetailComponent implements OnInit {
     const waPhone = formatWhatsAppNumber(order.client?.phone ?? null);
 
     if (!waPhone) {
-      this.toast.error('El cliente no tiene un número de celular válido registrado.');
+      this.toast.error(MESSAGES.common.invalidPhone);
       return;
     }
 
@@ -159,8 +165,6 @@ export class OrderDetailComponent implements OnInit {
     const url = isMobile
       ? `https://wa.me/${waPhone}?text=${encodedText}`
       : `https://web.whatsapp.com/send?phone=${waPhone}&text=${encodedText}`;
-
-    console.log('URL de WhatsApp generada:', url);
 
     window.open(url, '_blank', 'noopener');
   }
@@ -182,7 +186,7 @@ export class OrderDetailComponent implements OnInit {
       title,
       message,
       confirmText,
-      cancelText: MESSAGES.orders.back,
+      cancelText: MESSAGES.common.cancel,
       danger,
     });
 
@@ -196,12 +200,20 @@ export class OrderDetailComponent implements OnInit {
       next: (response) => {
         this.busy.set(false);
         this.order.set(response.data);
-        this.toast.success(response.message || MESSAGES.orders.updatedFallback);
+        this.toast.success(
+          response.message ||
+            (status === 'cancelled' ? MESSAGES.orders.cancelSuccess : MESSAGES.orders.updatedFallback)
+        );
         this.notifications.refreshUnreadCount();
       },
       error: (error) => {
         this.busy.set(false);
-        this.toast.error(extractErrorMessage(error, MESSAGES.orders.updateFallback));
+        this.toast.error(
+          extractErrorMessage(
+            error,
+            status === 'cancelled' ? MESSAGES.orders.cancelFallback : MESSAGES.orders.updateFallback
+          )
+        );
         this.load();
       },
     });

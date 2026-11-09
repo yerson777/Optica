@@ -23,7 +23,7 @@ import { ImageService } from '../../../core/services/image.service';
 import { PrescriptionService } from '../../../core/services/prescription.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/error-message';
-import { todayInputDate } from '../../../core/utils/format';
+import { formatDisplayDate, todayInputDate } from '../../../core/utils/format';
 import { notFutureDateValidator } from '../../../core/validators/field-validators';
 import { AuthImageComponent } from '../../../shared/ui/auth-image.component';
 import { CameraDialogComponent } from '../../../shared/ui/camera-dialog.component';
@@ -243,13 +243,15 @@ export class PrescriptionEditComponent implements OnInit {
     }
 
     if ((prescription.orders?.length ?? 0) > 0) {
-      this.toast.info(MESSAGES.prescriptions.deleteBlockedOrders);
+      this.toast.warning(MESSAGES.prescriptions.deleteBlockedOrders);
       return;
     }
 
     const confirmed = await this.confirm.ask({
       title: MESSAGES.prescriptions.deleteConfirmTitle,
-      message: MESSAGES.prescriptions.deleteConfirmMessage,
+      message: MESSAGES.prescriptions.deleteConfirmMessageFor(
+        formatDisplayDate(prescription.registered_at)
+      ),
       confirmText: MESSAGES.prescriptions.deleteConfirmText,
       cancelText: MESSAGES.prescriptions.deleteCancelText,
       danger: true,

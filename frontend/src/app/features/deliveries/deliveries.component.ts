@@ -128,11 +128,47 @@ export class DeliveriesComponent implements OnInit {
     });
   }
 
+  async cancelOrder(order: Order): Promise<void> {
+    if (this.busyId() !== null) {
+      return;
+    }
+
+    const confirmed = await this.confirm.ask({
+      title: MESSAGES.orders.cancelTitle,
+      message: MESSAGES.orders.cancelMessageFor(
+        order.id,
+        order.client?.full_name ?? ''
+      ),
+      confirmText: MESSAGES.orders.cancelConfirm,
+      cancelText: MESSAGES.common.cancel,
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.busyId.set(order.id);
+
+    this.orders.updateStatus(order.id, 'cancelled').subscribe({
+      next: (response) => {
+        this.busyId.set(null);
+        this.toast.success(response.message || MESSAGES.orders.cancelSuccess);
+        this.notifications.refreshUnreadCount();
+        this.load();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.cancelFallback));
+      },
+    });
+  }
+
   sendWhatsApp(order: Order): void {
     const waPhone = formatWhatsAppNumber(order.client?.phone ?? null);
 
     if (!waPhone) {
-      this.toast.error('El cliente no tiene un número de celular válido registrado.');
+      this.toast.error(MESSAGES.common.invalidPhone);
       return;
     }
 
@@ -143,8 +179,6 @@ export class DeliveriesComponent implements OnInit {
     const url = isMobile
       ? `https://wa.me/${waPhone}?text=${encodedText}`
       : `https://web.whatsapp.com/send?phone=${waPhone}&text=${encodedText}`;
-
-    console.log('URL de WhatsApp generada:', url);
 
     window.open(url, '_blank', 'noopener');
   }

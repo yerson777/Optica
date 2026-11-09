@@ -211,6 +211,42 @@ export class OrderListComponent implements OnInit {
     });
   }
 
+  async cancelOrder(order: Order): Promise<void> {
+    if (this.busyId() !== null) {
+      return;
+    }
+
+    const confirmed = await this.confirm.ask({
+      title: MESSAGES.orders.cancelTitle,
+      message: MESSAGES.orders.cancelMessageFor(
+        order.id,
+        order.client?.full_name ?? ''
+      ),
+      confirmText: MESSAGES.orders.cancelConfirm,
+      cancelText: MESSAGES.common.cancel,
+      danger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.busyId.set(order.id);
+
+    this.orders.updateStatus(order.id, 'cancelled').subscribe({
+      next: (response) => {
+        this.busyId.set(null);
+        this.toast.success(response.message || MESSAGES.orders.cancelSuccess);
+        this.notifications.refreshUnreadCount();
+        this.load();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.toast.error(extractErrorMessage(error, MESSAGES.orders.cancelFallback));
+      },
+    });
+  }
+
   phone(order: Order): string {
     return formatPhone(order.client?.phone);
   }

@@ -61,6 +61,20 @@ export function todayInputDate(): string {
   return toInputDate(new Date());
 }
 
+export function formatDisplayDate(value: string | null | undefined): string {
+  if (!value) {
+    return MESSAGES.common.emptyValue;
+  }
+
+  const [year, month, day] = value.slice(0, 10).split('-');
+
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return `${day}/${month}/${year}`;
+}
+
 export function formatWhatsAppNumber(phone: string | null | undefined): string | null {
   if (!phone) {
     return null;
