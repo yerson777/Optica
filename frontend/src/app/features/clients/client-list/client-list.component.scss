@@ -59,8 +59,21 @@
 
 .client-card__head {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.client-card__head app-status-chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+:host ::ng-deep .client-card .status-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  width: fit-content;
 }
 
 .client-card__avatar {
@@ -80,21 +93,23 @@
 .client-card__name {
   display: flex;
   flex-direction: column;
+  flex: 1 1 0;
   min-width: 0;
-  flex: 1;
 }
 
 .client-card__name strong {
   font-size: 1rem;
   color: #1d3a3a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .client-card__name span {
   font-size: 0.82rem;
   color: var(--optic-muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .client-card__meta {
@@ -147,14 +162,21 @@
     padding: 15px;
     gap: 12px;
   }
+}
 
-  .client-card__head {
-    align-items: flex-start;
-    flex-wrap: wrap;
+@media (max-width: 400px) {
+  .client-card__avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
   }
 
-  .client-card__head app-status-chip {
-    margin-left: 58px;
-    margin-top: -8px;
+  :host ::ng-deep .client-card .status-chip {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  :host ::ng-deep .client-card .status-chip .material-icons {
+    font-size: 14px;
   }
 }

@@ -138,6 +138,39 @@
   color: var(--optic-danger);
 }
 
+mat-form-field select {
+  min-height: 44px;
+  border-radius: 11px;
+  border: 1px solid var(--optic-border);
+  background: #fff;
+  padding: 9px 12px;
+  color: var(--optic-text);
+  outline: none;
+  min-width: 150px;
+  width: 100%;
+}
+
+mat-form-field select:focus {
+  border-color: var(--optic-primary);
+  box-shadow: 0 0 0 3px rgba(0, 160, 160, 0.12);
+}
+
+mat-form-field select:hover {
+  border-color: #4fa8a8;
+}
+
+mat-form-field select option {
+  background: #fff;
+  color: var(--optic-text);
+  padding: 10px;
+}
+
+mat-form-field select option:checked {
+  background: #e8f7f7;
+  color: #007171;
+  font-weight: 600;
+}
+
 .spinner {
   width: 18px;
   height: 18px;

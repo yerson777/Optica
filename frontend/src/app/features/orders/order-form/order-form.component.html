@@ -100,20 +100,16 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Tipo de lentes</mat-label>
-            <input
-              matInput
+            <select
+              matNativeControl
               formControlName="lens_type"
-              list="lensTypes"
-              maxlength="100"
-              placeholder="Ej. Progresivo"
-            />
-            <mat-icon matPrefix>visibility</mat-icon>
-            <mat-hint>Elige una opción o escribe el tipo exacto.</mat-hint>
-            <datalist id="lensTypes">
+              (change)="onLensTypeChange($event)"
+            >
               @for (type of lensTypes; track type) {
-                <option [value]="type"></option>
+                <option [value]="type">{{ type }}</option>
               }
-            </datalist>
+            </select>
+            <mat-hint>Selecciona el tipo de lentes.</mat-hint>
             @if (form.controls.lens_type.touched && form.controls.lens_type.invalid) {
               <mat-error>
                 @if (form.controls.lens_type.errors?.['maxlength']) {
@@ -124,6 +120,31 @@
               </mat-error>
             }
           </mat-form-field>
+
+          @if (showLensTypeOther()) {
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Escribe el tipo de lentes</mat-label>
+              <input
+                matInput
+                formControlName="lens_type_other"
+                maxlength="100"
+                placeholder="Ej. Bifocal azul"
+              />
+              <mat-hint>Máximo 100 caracteres.</mat-hint>
+              @if (
+                form.controls.lens_type_other.touched &&
+                form.controls.lens_type_other.invalid
+              ) {
+                <mat-error>
+                  @if (form.controls.lens_type_other.errors?.['required']) {
+                    Escribe el tipo de lentes.
+                  } @else if (form.controls.lens_type_other.errors?.['maxlength']) {
+                    El tipo de lentes no puede superar los 100 caracteres.
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          }
 
           <mat-form-field appearance="outline">
             <mat-label>Fecha del pedido</mat-label>

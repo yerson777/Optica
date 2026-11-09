@@ -70,9 +70,13 @@ export class OrderFormComponent implements OnInit {
     'Otro',
   ];
 
+  readonly showLensTypeOther = signal(false);
+  readonly lensTypeOther = signal<string>('');
+
   readonly form = this.fb.group({
     prescription_id: [null as number | null, [Validators.required]],
     lens_type: ['', [Validators.required, Validators.maxLength(100), trimmedRequired]],
+    lens_type_other: ['', [Validators.maxLength(100)]],
     observations: ['', [Validators.maxLength(2000)]],
     price: [null as number | null, [Validators.min(0), Validators.max(999999)]],
     advance: [null as number | null, [Validators.min(0), Validators.max(999999)]],
@@ -168,6 +172,15 @@ export class OrderFormComponent implements OnInit {
     return formatCurrency(value);
   }
 
+  onLensTypeChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.showLensTypeOther.set(value === 'Otro');
+    if (value !== 'Otro') {
+      this.lensTypeOther.set('');
+      this.form.controls.lens_type_other.setValue('');
+    }
+  }
+
   openImage(image: PrescriptionImage, title?: string): void {
     this.dialog.open<ImageViewerDialogComponent, ImageViewerData>(
       ImageViewerDialogComponent,
@@ -193,6 +206,15 @@ export class OrderFormComponent implements OnInit {
       return;
     }
 
+    if (this.form.controls.lens_type.value === 'Otro') {
+      const other = (this.form.controls.lens_type_other.value ?? '').trim();
+      if (!other) {
+        this.form.controls.lens_type_other.markAsTouched();
+        this.error.set('Escribe el tipo de lentes.');
+        return;
+      }
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -204,6 +226,8 @@ export class OrderFormComponent implements OnInit {
     }
 
     const value = this.form.getRawValue();
+    const lensType =
+      value.lens_type === 'Otro' ? (value.lens_type_other ?? '').trim() : (value.lens_type ?? '').trim();
 
     this.saving.set(true);
     this.error.set(null);
@@ -212,7 +236,7 @@ export class OrderFormComponent implements OnInit {
       .create({
         client_id: client.id,
         prescription_id: Number(value.prescription_id),
-        lens_type: (value.lens_type ?? '').trim(),
+        lens_type: lensType,
         observations: value.observations?.trim() || null,
         price: value.price === null ? null : Number(value.price),
         advance: value.advance === null ? null : Number(value.advance),
