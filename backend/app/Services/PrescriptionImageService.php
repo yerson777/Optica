@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Prescription;
 use App\Models\PrescriptionImage;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -80,7 +81,20 @@ class PrescriptionImageService
 
     public function deleteOne(PrescriptionImage $image): void
     {
-        Storage::disk('local')->delete($image->file_path);
+        $path = $image->file_path;
+
+        if (is_string($path) && $path !== '') {
+            try {
+                Storage::disk('local')->delete($path);
+            } catch (\Throwable $e) {
+                Log::warning('No se pudo eliminar el archivo de la receta', [
+                    'image_id' => $image->id,
+                    'path' => $path,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $image->delete();
     }
 

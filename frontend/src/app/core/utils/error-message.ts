@@ -1,6 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { MESSAGES } from '../i18n/messages.es';
 
+export function extractServerMessage(error: unknown): string | null {
+  if (error instanceof HttpErrorResponse) {
+    const message = error.error?.message;
+
+    if (typeof message === 'string' && message.trim() !== '') {
+      return message;
+    }
+  }
+
+  return null;
+}
+
 export function extractErrorMessage(error: unknown, fallback: string = MESSAGES.common.unexpected): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {

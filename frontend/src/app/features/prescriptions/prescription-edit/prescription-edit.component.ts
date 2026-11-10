@@ -22,12 +22,11 @@ import { ConfirmDialogService } from '../../../core/services/confirm-dialog.serv
 import { ImageService } from '../../../core/services/image.service';
 import { PrescriptionService } from '../../../core/services/prescription.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { extractErrorMessage } from '../../../core/utils/error-message';
 import {
-  formatDisplayDate,
-  formatPrescriptionBlockMessage,
-  todayInputDate,
-} from '../../../core/utils/format';
+  extractErrorMessage,
+  extractServerMessage,
+} from '../../../core/utils/error-message';
+import { formatDisplayDate, todayInputDate } from '../../../core/utils/format';
 import { notFutureDateValidator } from '../../../core/validators/field-validators';
 import { AuthImageComponent } from '../../../shared/ui/auth-image.component';
 import { CameraDialogComponent } from '../../../shared/ui/camera-dialog.component';
@@ -246,11 +245,6 @@ export class PrescriptionEditComponent implements OnInit {
       return;
     }
 
-    if ((prescription.orders?.length ?? 0) > 0) {
-      this.toast.warning(formatPrescriptionBlockMessage(prescription.orders));
-      return;
-    }
-
     const confirmed = await this.confirm.ask({
       title: MESSAGES.prescriptions.deleteConfirmTitle,
       message: MESSAGES.prescriptions.deleteConfirmMessageFor(
@@ -277,7 +271,10 @@ export class PrescriptionEditComponent implements OnInit {
       },
       error: (error) => {
         this.saving.set(false);
-        this.error.set(extractErrorMessage(error, MESSAGES.prescriptions.deleteFallback));
+        this.error.set(
+          extractServerMessage(error) ??
+            extractErrorMessage(error, MESSAGES.prescriptions.deleteFallback)
+        );
       },
     });
   }

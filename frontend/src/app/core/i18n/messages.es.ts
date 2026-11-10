@@ -118,7 +118,7 @@ export const MESSAGES = {
     imageReplaceSuccess: 'La fotografía se reemplazó correctamente.',
     imageReplaceFallback: 'No se pudo reemplazar la fotografía. Inténtalo nuevamente.',
     imageRequired: 'La receta debe tener al menos una fotografía.',
-    deleteSuccess: 'La receta se eliminó correctamente.',
+    deleteSuccess: 'Receta eliminada correctamente.',
     deleteFallback: 'No se pudo eliminar la receta. Inténtalo nuevamente.',
     deleteConfirmTitle: 'Eliminar receta',
     deleteConfirmMessage:
@@ -127,8 +127,6 @@ export const MESSAGES = {
       `¿Eliminar la receta del ${date}?\n\nSe borrarán todas sus fotografías y esta acción no se puede deshacer.`,
     deleteConfirmText: 'Eliminar',
     deleteCancelText: 'Cancelar',
-    deleteBlockedOrders:
-      'No puedes eliminar una receta que tiene pedidos asociados. Elimina o reasigna esos pedidos primero.',
   },
   users: {
     loadFallback: 'No se pudieron cargar los usuarios. Inténtalo nuevamente.',

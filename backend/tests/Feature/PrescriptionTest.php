@@ -253,9 +253,61 @@ class PrescriptionTest extends TestCase
         ]);
 
         $this->deleteJson('/api/prescriptions/'.$prescription->id)
-            ->assertStatus(422);
+            ->assertStatus(422)
+            ->assertJsonPath(
+                'message',
+                'Esta receta tiene 1 pedido asociado. Elimínalo desde Pedidos primero.'
+            );
 
         $this->assertDatabaseHas('prescriptions', ['id' => $prescription->id]);
+    }
+
+    public function test_prescription_with_multiple_orders_reports_the_count(): void
+    {
+        [$prescription] = $this->makePrescriptionWithImage();
+
+        foreach ([Order::STATUS_PENDING, Order::STATUS_DELIVERED] as $status) {
+            Order::create([
+                'client_id' => $this->client->id,
+                'prescription_id' => $prescription->id,
+                'lens_type' => 'Monofocal',
+                'status' => $status,
+                'ordered_at' => now()->toDateString(),
+            ]);
+        }
+
+        $this->deleteJson('/api/prescriptions/'.$prescription->id)
+            ->assertStatus(422)
+            ->assertJsonPath(
+                'message',
+                'Esta receta tiene 2 pedidos asociados. Elimínalos desde Pedidos primero.'
+            );
+
+        $this->assertDatabaseHas('prescriptions', ['id' => $prescription->id]);
+    }
+
+    public function test_prescription_with_only_soft_deleted_orders_can_be_deleted(): void
+    {
+        [$prescription] = $this->makePrescriptionWithImage();
+
+        $order = Order::create([
+            'client_id' => $this->client->id,
+            'prescription_id' => $prescription->id,
+            'lens_type' => 'Monofocal',
+            'status' => Order::STATUS_DELIVERED,
+            'ordered_at' => now()->toDateString(),
+        ]);
+
+        $order->delete();
+
+        $this->deleteJson('/api/prescriptions/'.$prescription->id)
+            ->assertOk();
+
+        $this->assertDatabaseMissing('prescriptions', ['id' => $prescription->id]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'prescription_id' => null,
+        ]);
     }
 
     /**

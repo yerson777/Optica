@@ -11,13 +11,11 @@ import { ClientService } from '../../../core/services/client.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { PrescriptionService } from '../../../core/services/prescription.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { extractErrorMessage } from '../../../core/utils/error-message';
 import {
-  formatCurrency,
-  formatDisplayDate,
-  formatPhone,
-  formatPrescriptionBlockMessage,
-} from '../../../core/utils/format';
+  extractErrorMessage,
+  extractServerMessage,
+} from '../../../core/utils/error-message';
+import { formatCurrency, formatDisplayDate, formatPhone } from '../../../core/utils/format';
 import { AuthImageComponent } from '../../../shared/ui/auth-image.component';
 import {
   ImageViewerData,
@@ -170,11 +168,6 @@ export class ClientDetailComponent implements OnInit {
   }
 
   async deletePrescription(prescription: Prescription): Promise<void> {
-    if (this.orderCount(prescription) > 0) {
-      this.toast.warning(formatPrescriptionBlockMessage(prescription.orders));
-      return;
-    }
-
     const confirmed = await this.confirm.ask({
       title: MESSAGES.prescriptions.deleteConfirmTitle,
       message: MESSAGES.prescriptions.deleteConfirmMessageFor(
@@ -199,7 +192,10 @@ export class ClientDetailComponent implements OnInit {
         this.load();
       },
       error: (error) => {
-        this.toast.error(extractErrorMessage(error, MESSAGES.prescriptions.deleteFallback));
+        this.toast.error(
+          extractServerMessage(error) ??
+            extractErrorMessage(error, MESSAGES.prescriptions.deleteFallback)
+        );
       },
     });
   }

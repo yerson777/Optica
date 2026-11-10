@@ -32,7 +32,11 @@ describe('field validators', () => {
   it('rejects future dates only', () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const future = tomorrow.toISOString().slice(0, 10);
+    const future = [
+      tomorrow.getFullYear(),
+      String(tomorrow.getMonth() + 1).padStart(2, '0'),
+      String(tomorrow.getDate()).padStart(2, '0'),
+    ].join('-');
 
     expect(notFutureDateValidator(new FormControl(today()))).toBeNull();
     expect(notFutureDateValidator(new FormControl(future))).toEqual({

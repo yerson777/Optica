@@ -14,6 +14,7 @@ use App\Services\PrescriptionImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PrescriptionController extends Controller
 {
@@ -148,28 +149,45 @@ class PrescriptionController extends Controller
 
     public function destroy(Prescription $prescription): JsonResponse
     {
-        if ($prescription->orders()->exists()) {
-            return response()->json([
-                'message' => __('messages.prescriptions.delete_blocked_orders'),
-            ], 422);
-        }
-
         $prescriptionId = $prescription->id;
 
-        DB::transaction(function () use ($prescription, $prescriptionId) {
-            foreach ($prescription->images as $image) {
-                $this->images->deleteOne($image);
+        try {
+            $activeOrders = $prescription->orders()->count();
+
+            if ($activeOrders > 0) {
+                return response()->json([
+                    'message' => trans_choice(
+                        'messages.prescriptions.delete_blocked_orders',
+                        $activeOrders,
+                        ['count' => $activeOrders]
+                    ),
+                ], 422);
             }
 
-            $this->audit->log(
-                'prescription.deleted',
-                "Eliminó la receta #{$prescriptionId}",
-                $prescription,
-                ['prescription_id' => $prescriptionId, 'client_id' => $prescription->client_id]
-            );
+            DB::transaction(function () use ($prescription, $prescriptionId) {
+                foreach ($prescription->images as $image) {
+                    $this->images->deleteOne($image);
+                }
 
-            $prescription->delete();
-        });
+                $this->audit->log(
+                    'prescription.deleted',
+                    "Eliminó la receta #{$prescriptionId}",
+                    $prescription,
+                    ['prescription_id' => $prescriptionId, 'client_id' => $prescription->client_id]
+                );
+
+                $prescription->delete();
+            });
+        } catch (\Throwable $e) {
+            Log::error('No se pudo eliminar la receta', [
+                'prescription_id' => $prescriptionId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => __('messages.prescriptions.delete_failed'),
+            ], 500);
+        }
 
         return response()->json([
             'message' => __('messages.prescriptions.deleted'),

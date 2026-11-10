@@ -37,7 +37,8 @@ return [
         'image_deleted' => 'Fotografía eliminada correctamente.',
         'image_replaced' => 'Fotografía reemplazada correctamente.',
         'deleted' => 'Receta eliminada correctamente.',
-        'delete_blocked_orders' => 'No se puede eliminar la receta porque tiene pedidos asociados. Elimina o reasigna esos pedidos primero.',
+        'delete_failed' => 'No se pudo eliminar la receta. Inténtalo nuevamente.',
+        'delete_blocked_orders' => 'Esta receta tiene :count pedido asociado. Elimínalo desde Pedidos primero.|Esta receta tiene :count pedidos asociados. Elimínalos desde Pedidos primero.',
     ],
     'users' => [
         'created' => 'Usuario creado correctamente. Ya puede iniciar sesión.',
