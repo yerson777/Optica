@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -48,6 +56,9 @@ export class ClientDetailComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmDialogService);
   private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private currentClientId: number | null = null;
 
   readonly client = signal<Client | null>(null);
   readonly loading = signal(true);
@@ -59,14 +70,28 @@ export class ClientDetailComponent implements OnInit {
   readonly pageSize = signal(10);
 
   ngOnInit(): void {
-    this.load();
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const id = Number(params.get('id'));
+
+      if (!id) {
+        this.router.navigate(['/clientes']);
+        return;
+      }
+
+      if (this.currentClientId !== id) {
+        this.currentClientId = id;
+        this.prescriptionsPage.set(1);
+        this.ordersPage.set(1);
+      }
+
+      this.load();
+    });
   }
 
   load(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id = this.currentClientId;
 
     if (!id) {
-      this.router.navigate(['/clientes']);
       return;
     }
 
@@ -82,6 +107,10 @@ export class ClientDetailComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
+          if (this.currentClientId !== id) {
+            return;
+          }
+
           this.client.set(response.data);
           this.prescriptionsLastPage.set(
             response.data.prescriptions_pagination?.last_page ?? 1
@@ -90,6 +119,10 @@ export class ClientDetailComponent implements OnInit {
           this.loading.set(false);
         },
         error: (error) => {
+          if (this.currentClientId !== id) {
+            return;
+          }
+
           this.loading.set(false);
           this.error.set(extractErrorMessage(error, MESSAGES.clients.loadDetailFallback));
         },

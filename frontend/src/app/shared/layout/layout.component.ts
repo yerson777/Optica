@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -89,6 +99,21 @@ export class LayoutComponent {
   readonly searchTerm = signal('');
   readonly unreadCount = this.notifications.unreadCount;
   private readonly searchSubject = new Subject<string>();
+  private searchFocused = false;
+
+  @ViewChild('searchContainer')
+  private searchContainer?: ElementRef<HTMLElement>;
+
+  @HostListener('document:pointerdown', ['$event'])
+  onDocumentPointerDown(event: PointerEvent): void {
+    const container = this.searchContainer?.nativeElement;
+
+    if (!container || !(event.target instanceof Node) || container.contains(event.target)) {
+      return;
+    }
+
+    this.showResults.set(false);
+  }
 
   constructor() {
     effect(() => {
@@ -120,8 +145,17 @@ export class LayoutComponent {
       )
       .subscribe({
         next: (response) => {
+          if (this.searchTerm().trim() === '') {
+            this.results.set([]);
+            this.showResults.set(false);
+            return;
+          }
+
           this.results.set(response.data);
-          this.showResults.set(true);
+
+          if (this.searchFocused) {
+            this.showResults.set(true);
+          }
         },
         error: () => {
           this.results.set([]);
@@ -174,20 +208,21 @@ export class LayoutComponent {
     if (term.trim() === '') {
       this.results.set([]);
       this.showResults.set(false);
-      return;
     }
 
     this.searchSubject.next(term);
   }
 
   onSearchFocus(): void {
+    this.searchFocused = true;
+
     if (this.results().length || this.searchTerm().trim() !== '') {
       this.showResults.set(true);
     }
   }
 
   onSearchBlur(): void {
-    setTimeout(() => this.showResults.set(false), 180);
+    this.searchFocused = false;
   }
 
   submitGlobalSearch(): void {
@@ -197,18 +232,20 @@ export class LayoutComponent {
       return;
     }
 
+    this.clearSearch();
     this.router.navigate(['/clientes'], { queryParams: { q: term } });
   }
 
   selectClient(client: Client): void {
-    this.router.navigate(['/clientes', client.id]);
     this.clearSearch();
+    this.router.navigate(['/clientes', client.id]);
   }
 
   clearSearch(): void {
     this.searchTerm.set('');
     this.results.set([]);
     this.showResults.set(false);
+    this.searchSubject.next('');
   }
 
   closeResults(): void {
